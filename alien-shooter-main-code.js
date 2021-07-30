@@ -5,7 +5,6 @@
   Shoot: Space (can only shoot again if ammo is off screen)
 */
 window.onload = function () {
-
   const distance = (o1, o2) => {
     const x_square = Math.pow( o2.get('x_pos') - o1.get('x_pos'), 2 );
     const y_square = Math.pow( o2.get('y_pos') - o1.get('y_pos'), 2 );
@@ -55,13 +54,16 @@ window.onload = function () {
     shoot() {
       this.shots.push(
         new Figure(
-          this.x_pos,
-          this.y_pos,
+          this.x_pos+(this.y_pos*0.01),
+          this.y_pos-(this.y_pos*0.01),
           1,
           1,
-          '-'
+          '.'
         )
       );
+    }
+    move(direction) {
+      this.y_pos = this.y_pos + ( this.height * 0.05 * direction );
     }
   }
 
@@ -92,20 +94,34 @@ window.onload = function () {
       }
       document.getElementById('gameWindow').height = height;
       document.getElementById('gameWindow').width = width;
-      const canvas = document.getElementById('gameWindow');
-      this.canvas = canvas.getContext("2d");
+      this.gameWindow = document.getElementById('gameWindow');
+      this.canvas = this.gameWindow.getContext("2d");
       this.objectRepository = [];
+    }
+    setResolution(option) {
+      switch (option) {
+        case 1: 
+          this.gameWindow.height = 786;
+          this.gameWindow.width = 1024;
+          break;
+        case 2: 
+          this.gameWindow.height = 720;
+          this.gameWindow.width = 1280;
+          break;
+        default: 
+          break;
+      }
     }
     addObject(object) {
       this.objectRepository.push(object);
     }
     refresh() {
-      this.canvas.clearRect(0, 0, 400, 450);
+      this.canvas.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
       this.objectRepository.forEach((object) => {
-        this.canvas.font = "30px Windings";
+        this.canvas.font = `${this.gameWindow.width*0.025}px Windings`;
         let x = object.get('x_pos'),
           y = object.get('y_pos');
-        if (y >= 290) y -= 20;
+        if (y >= this.gameWindow.height - 20) y -= 20;
         if (y <= 10) y += 20;
         object.set('y_pos', y);
         this.canvas.strokeText(object.get('symbol'), x, y);
@@ -113,16 +129,17 @@ window.onload = function () {
     }
   }
 
-  const display = new Display(300, 400);
+  const display = new Display(400, 1000);
+
   const airplane = new Hero(
-    20,
-    150,
-    50,
-    50,
+    display.gameWindow.height*0.025,
+    display.gameWindow.height/2,
+    display.gameWindow.height*0.5,
+    display.gameWindow.height*0.5,
     '\u{2708}'
   );
   const ufo = new Enemy(
-    300,
+    this.gameWindow.width - ( this.gameWindow.width * 0.05 ),
     200,
     50,
     50,
@@ -134,17 +151,16 @@ window.onload = function () {
 
   document.addEventListener("keypress", function (event) {
     const key = event.key;
-    let x = airplane.get('x_pos'),
-      y = airplane.get('y_pos');
-    if (key === 'w') y = y -= 10;
-    if (key === 's') y = y += 10;
+    console.log(key);
+    if (key === 'w' || key.includes('w', ' ')) airplane.move(-1);
+    if (key === 's' || key.includes('s', ' ')) airplane.move(1);
     if (key === ' ') airplane.shoot();
-    airplane.set('y_pos', y);
     display.refresh();
   });
 
   setInterval(function () {
-    let ufo_y = ufo.get('y_pos');
+    let ufo_y = ufo.get('y_pos'),
+        ufo_x = ufo.get('x_pos');
     let ufo_dir = ufo.get('direction');
     if (ufo_y < 280) {
       ufo.set('y_pos', ufo_y + 10 * ufo_dir);
@@ -158,18 +174,30 @@ window.onload = function () {
       ufo.set('y_pos', ufo_y + 10 * ufo_dir);
     }
 
+    ufo.set('x_pos', ufo_x - 5);
+
     let shots = airplane.get('shots');
     shots.forEach( (shot) => {
       let x = shot.get('x_pos');
       shot.set('x_pos', x + 10);
       display.addObject(shot); 
-      if (distance(shot, ufo) <= 5) {
-        ufo.set('symbol', '');
+      if (distance(shot, ufo) <= ufo.height * 0.5 ) {
+        setTimeout ( function () {
+          ufo.set('symbol', '\u{1F4A2}');
+        }, 100);
       }
     });
 
     display.refresh();
   }, 100);
+
+  const selectResolution = document.getElementById('resolution');
+  selectResolution.addEventListener('click', function () {
+    const option = selectResolution.value;
+    console.log(option);
+    display.setResolution(option);
+    display.refresh();
+  });
 }
 
 
