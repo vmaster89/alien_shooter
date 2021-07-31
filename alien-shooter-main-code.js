@@ -24,12 +24,17 @@ window.onload = function () {
       this.height = height;
       this.width = width;
       this.symbol = symbol;
+      this.alive = true;
     }
     set(attr, value) {
       this[attr] = value;
     }
     get(attr) {
       return this[attr];
+    }
+    destroyed() {
+      this.alive = false;
+      this.symbol = '';
     }
   }
 
@@ -48,10 +53,11 @@ window.onload = function () {
         width,
         symbol
       );
-      console.log('Hero');
       this.shots = [];
     }
     shoot() {
+      let shotCounter = document.getElementById('shots');
+      shotCounter.innerText = parseInt(shotCounter.innerText)+1;
       this.shots.push(
         new Figure(
           this.x_pos+(this.y_pos*0.01),
@@ -61,6 +67,7 @@ window.onload = function () {
           '.'
         )
       );
+      console.dir(this.shots.length);
     }
     move(direction) {
       this.y_pos = this.y_pos + ( this.height * 0.05 * direction );
@@ -83,8 +90,22 @@ window.onload = function () {
         symbol
       );
       this.y_pos = Math.random()*y_pos;
-      console.log('enemy');
       this.direction = 1;
+    }
+    move() {
+      if ( this.y_pos < 280 ) {
+        this.y_pos = this.y_pos + 1 * this.direction;
+      }
+      if ( this.y_pos > 240 ) {
+        this.direction = -1;
+        this.y_pos = this.y_pos + 1 * this.direction;
+      }
+      if ( this.y_pos < 50 ) {
+        this.direction = 1;
+        this.y_pos = this.y_pos + 1 * this.direction;
+      }
+
+      this.x_pos = this.x_pos - 2;
     }
   }
 
@@ -116,10 +137,16 @@ window.onload = function () {
     addObject(object) {
       this.objectRepository.push(object);
     }
+    removeObject(i) {
+      // this.objectRepository.slice(i, i+1);
+    }
+    getObjectInstance(i) {
+      return this.objectRepository[i];
+    }
     refresh() {
       this.canvas.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
+      this.canvas.font = `${this.gameWindow.width*0.025}px Windings`;
       this.objectRepository.forEach((object) => {
-        this.canvas.font = `${this.gameWindow.width*0.025}px Windings`;
         let x = object.get('x_pos'),
           y = object.get('y_pos');
         if (y >= this.gameWindow.height - 20) y -= 20;
@@ -139,14 +166,6 @@ window.onload = function () {
     display.gameWindow.height*0.5,
     '\u{2708}'
   );
-  /*const ufo = new Enemy(
-    display.gameWindow.width - ( display.gameWindow.width * 0.05 ),
-    display.gameWindow.height,
-    50,
-    50,
-    '\u{1F6F8}'
-  );
-  display.addObject(ufo);*/
 
   const UfoRepository = [];
   for ( let i = 0; i < 5; i+=1 ) {
@@ -168,59 +187,40 @@ window.onload = function () {
 
   document.addEventListener("keypress", function (event) {
     const key = event.key;
-    console.log(key);
-    if (key === 'w' || key.includes('w', ' ')) airplane.move(-1);
-    if (key === 's' || key.includes('s', ' ')) airplane.move(1);
+    if (key === 'w') airplane.move(-1);
+    if (key === 's') airplane.move(1);
     if (key === ' ') airplane.shoot();
     display.refresh();
   });
 
-  function moveUfo (ufo) {
-    let ufo_y = ufo.get('y_pos'),
-        ufo_x = ufo.get('x_pos');
-    let ufo_dir = ufo.get('direction');
-    if (ufo_y < 280) {
-      ufo.set('y_pos', ufo_y + 10 * ufo_dir);
-    }
-    if (ufo_y > 240) {
-      ufo.set('direction', -1);
-      ufo.set('y_pos', ufo_y + 10 * ufo_dir);
-    }
-    if (ufo_y < 50) {
-      ufo.set('direction', 1);
-      ufo.set('y_pos', ufo_y + 10 * ufo_dir);
-    }
-
-    ufo.set('x_pos', ufo_x - 5);
-  }
-
-  setInterval(function () {
-    UfoRepository.forEach( ( ufo, i ) => {
-      moveUfo(ufo);
-      let shots = airplane.get('shots');
-      shots.forEach( (shot) => {
+  function loop(timestamp) {
+    let shots = airplane.get('shots');
+    UfoRepository.forEach( ( ufo, j ) => {
+      ufo.move();
+      shots.forEach( (shot, i) => {
         let x = shot.get('x_pos');
-        shot.set('x_pos', x + 20);
-        display.addObject(shot); 
-        if (distance(shot, ufo) <= ufo.height * 0.5 ) {
+        shot.set('x_pos', x + airplane.height * 0.01 );
+        if (distance(shot, ufo) <= ufo.height * 0.59 ) {
           ufo.set('symbol', '\u{1F4A2}');
-          setTimeout ( function () {
-            ufo.set('symbol', '');
-            UfoRepository.slice(i, i+1);
-          }, 40);
+          ufo.destroyed();
         }
+        /*if ( ufo.x_pos >= display.gameWindow.width ) {
+          UfoRepository.splice(i, i+1);
+        }*/
       });
     });
+    shots.forEach( ( shot, i ) => {
+      display.addObject(shot); 
+      if ( shot.x_pos >= display.gameWindow.width ) {
+        shots.splice(i, i+1);
+      }
+    }); 
     display.refresh();
-  }, 80);
-
-  const selectResolution = document.getElementById('resolution');
-  selectResolution.addEventListener('click', function () {
-    const option = selectResolution.value;
-    console.log(option);
-    display.setResolution(option);
-    display.refresh();
-  });
+    lastRender = timestamp;
+    window.requestAnimationFrame(loop);
+  }
+  var lastRender = 0;
+  window.requestAnimationFrame(loop);
 }
 
 
