@@ -82,6 +82,7 @@ window.onload = function () {
         width,
         symbol
       );
+      this.y_pos = Math.random()*y_pos;
       console.log('enemy');
       this.direction = 1;
     }
@@ -138,14 +139,30 @@ window.onload = function () {
     display.gameWindow.height*0.5,
     '\u{2708}'
   );
-  const ufo = new Enemy(
-    this.gameWindow.width - ( this.gameWindow.width * 0.05 ),
-    200,
+  /*const ufo = new Enemy(
+    display.gameWindow.width - ( display.gameWindow.width * 0.05 ),
+    display.gameWindow.height,
     50,
     50,
     '\u{1F6F8}'
   );
-  display.addObject(ufo);
+  display.addObject(ufo);*/
+
+  const UfoRepository = [];
+  for ( let i = 0; i < 5; i+=1 ) {
+    UfoRepository.push(new Enemy(
+      display.gameWindow.width - ( display.gameWindow.width * 0.05 ),
+      display.gameWindow.height,
+      50,
+      50,
+      '\u{1F6F8}'
+    ));
+  };
+
+  UfoRepository.forEach( (ufo) => {
+    display.addObject(ufo);
+  });
+
   display.addObject(airplane);
   display.refresh();
 
@@ -158,7 +175,7 @@ window.onload = function () {
     display.refresh();
   });
 
-  setInterval(function () {
+  function moveUfo (ufo) {
     let ufo_y = ufo.get('y_pos'),
         ufo_x = ufo.get('x_pos');
     let ufo_dir = ufo.get('direction');
@@ -175,21 +192,27 @@ window.onload = function () {
     }
 
     ufo.set('x_pos', ufo_x - 5);
+  }
 
-    let shots = airplane.get('shots');
-    shots.forEach( (shot) => {
-      let x = shot.get('x_pos');
-      shot.set('x_pos', x + 10);
-      display.addObject(shot); 
-      if (distance(shot, ufo) <= ufo.height * 0.5 ) {
-        setTimeout ( function () {
+  setInterval(function () {
+    UfoRepository.forEach( ( ufo, i ) => {
+      moveUfo(ufo);
+      let shots = airplane.get('shots');
+      shots.forEach( (shot) => {
+        let x = shot.get('x_pos');
+        shot.set('x_pos', x + 20);
+        display.addObject(shot); 
+        if (distance(shot, ufo) <= ufo.height * 0.5 ) {
           ufo.set('symbol', '\u{1F4A2}');
-        }, 100);
-      }
+          setTimeout ( function () {
+            ufo.set('symbol', '');
+            UfoRepository.slice(i, i+1);
+          }, 40);
+        }
+      });
     });
-
     display.refresh();
-  }, 100);
+  }, 80);
 
   const selectResolution = document.getElementById('resolution');
   selectResolution.addEventListener('click', function () {
