@@ -26,7 +26,8 @@ window.onload = function () {
       y_pos,
       height,
       width,
-      symbol
+      symbol,
+      symbolType
     ) {
       this.x_pos = x_pos;
       this.y_pos = y_pos;
@@ -34,6 +35,7 @@ window.onload = function () {
       this.width = width;
       this.symbol = symbol;
       this.alive = true;
+      this.symbolType = symbolType;
     }
     set(attr, value) {
       this[attr] = value;
@@ -53,34 +55,53 @@ window.onload = function () {
       y_pos,
       height,
       width,
-      symbol
+      symbol,
+      symbolType
     ) {
       super(
         x_pos,
         y_pos,
         height,
         width,
-        symbol
+        symbol,
+        symbolType
       );
-      this.shots = [];
     }
     shoot(display) {
       let shotCounter = document.getElementById('shots');
       shotCounter.innerText = parseInt(shotCounter.innerText)+1;
-      const shot = new Figure(
-        this.x_pos+(this.y_pos*0.01),
-        this.y_pos-(this.y_pos*0.01),
+      const shot = new Ammo(
+        this.x_pos,
+        this.y_pos+22, // this should be done relatively in the future 
         1,
         1,
-        '.'
-      );
-      this.shots.push(
-        shot
+        '.',
+        'char'
       );
       display.addObject(shot);
     }
     move(direction) {
       this.y_pos = this.y_pos + ( this.height * 0.05 * direction );
+    }
+  }
+
+  class Ammo extends Figure {
+    constructor(
+      x_pos,
+      y_pos,
+      height,
+      width,
+      symbol,
+      symbolType
+    ) {
+      super(
+        x_pos,
+        y_pos,
+        height,
+        width,
+        symbol,
+        symbolType
+      );
     }
   }
 
@@ -90,16 +111,18 @@ window.onload = function () {
       y_pos,
       height,
       width,
-      symbol
+      symbol,
+      symbolType
     ) {
       super(
         x_pos,
         y_pos,
         height,
         width,
-        symbol
+        symbol,
+        symbolType
       );
-      this.y_pos = Math.random()*y_pos;
+      this.y_pos = Math.round(Math.random()*y_pos);
       this.x_pos = x_pos;
       this.direction = 1;
     }
@@ -163,7 +186,8 @@ window.onload = function () {
         if (y >= this.gameWindow.height - 20) y -= 20;
         if (y <= 10) y += 20;
         object.set('y_pos', y);
-        this.canvas.strokeText(object.get('symbol'), x, y);
+        if (object.symbolType === 'img') this.canvas.drawImage(object.get('symbol'), x, y);
+        if (object.symbolType === 'char') this.canvas.strokeText(object.get('symbol'), x, y);
       });
     }
   }
@@ -175,76 +199,91 @@ window.onload = function () {
     display.gameWindow.height/2,
     display.gameWindow.height*0.5,
     display.gameWindow.height*0.5,
-    '\u{2708}'
+    document.getElementById('vehicle'),
+    'img'
   );
 
-  const UfoRepository = [];
-
-  //function createEnemies() {
-    let space = 50;
-    for ( let i = 0; i < 5; i+=1 ) {
-    //setInterval( function () {
+  function EnemyBuilder (count, space) {
+    for (let i = 0; i <= count-1; i+=1 ) {
       space += 50;
       const enemy = new Enemy(
         display.gameWindow.width - space,
         display.gameWindow.height,
         50,
         50,
-        '\u{1F6F8}'
+        '\u{1F6F8}',
+        'char'
       );
       display.addObject(enemy);
-      UfoRepository.push(enemy);
-      
-    };
-
+    }
+  }
+  
+  EnemyBuilder(2, 50);
   display.addObject(airplane);
-  display.refresh();
 
-  document.addEventListener("keypress", function (event) {
+  document.addEventListener("keydown", function (event) {
     const key = event.key;
-    if (key === 'w') airplane.move(-1);
+    console.log(key);
+    if (key === 'w' || (key === 'w' && key === ' ' 
+    ) ) airplane.move(-1);
     if (key === 's') airplane.move(1);
     if (key === ' ') airplane.shoot(display);
-    display.refresh();
   });
+  let counter = 4;
+  setInterval( function () {
+    let shots = [];
+    let ufos = [];
+    for (let i = 0; i <= display.objectRepository.length; i+=1 ) {
+      let object = display.objectRepository[i];
+      if ( object instanceof Enemy) {
+        ufos.push(object);
+      }
+      if ( object instanceof Ammo) {
+        shots.push(object);
+      }
+    };
 
-  function loop(timestamp) {
-    let shots = airplane.get('shots');
-    UfoRepository.forEach( ( ufo, j ) => {
+    if (shots.length >= 1) {
+      shots.forEach( (shot, i) => {
+        shot.x_pos = shot.x_pos + airplane.height * 0.01;
+      });
+    }
+
+    ufos.forEach ( (ufo) => {
       ufo.move();
       shots.forEach( (shot, i) => {
-        let x = shot.get('x_pos');
-        shot.set('x_pos', x + airplane.height * 0.005 );
         if (distance(shot, ufo) <= ufo.height * 0.59 ) {
-          ufo.set('symbol', '\u{1F4A2}');
-          //ufo.destroyed();
+          ufo.set('symbol', '');
         }
       });
     });
 
     // CleanUp 
-    shots.forEach( ( shot, i ) => {
-      if ( shot.x_pos > display.gameWindow.width ) {
-        shots.splice(i, i+1);
+    display.objectRepository = display.objectRepository.filter( ( object ) => {
+      if ( object instanceof Enemy && object.x_pos > 0 ) {
+        return object;
       }
-    }); 
-    display.objectRepository.forEach( (object, i) => {
-      if ( object.x_pos > display.gameWindow.width ) {
-        display.objectRepository.splice(i, i+1);
+      if ( object instanceof Ammo && object.x_pos < display.gameWindow.width ) {
+        return object;
       }
-      if ( object.x_pos <= -100 && Object instanceof Enemy) {
-        display.objectRepository.splice(i, i+1);
+      if ( object instanceof Hero ){
+        return object;
       }
     });
+    const ufoCounter = display.objectRepository.filter( ( object ) => {
+      if ( object instanceof Enemy && object.x_pos > 0 ) {
+        return object;
+      }
+    }).length;
+
+    if (ufoCounter === 0) {
+      EnemyBuilder(counter, 50);
+      counter = Math.round(counter * 1.2);
+    }
 
     display.refresh();
-    lastRender = timestamp;
-    window.requestAnimationFrame(loop);
     console.log(display.objectRepository.length);
-    // console.log(shots.length);
-  }
-  var lastRender = 0;
-  window.requestAnimationFrame(loop);
+  }, 10);
 }
 
 
