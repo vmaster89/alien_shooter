@@ -70,8 +70,11 @@ window.onload = function () {
         alive
       );
       this.alive = alive;
+      this.ammo = 10;
     }
     shoot(display) {
+      if ( this.ammo <= 0 ) return;
+      this.ammo -= 1;
       const shot = new Ammo(
         this.x_pos,
         this.y_pos+22, // this should be done relatively in the future 
@@ -84,7 +87,7 @@ window.onload = function () {
       display.addObject(shot);
     }
     move(direction) {
-      this.y_pos = this.y_pos + ( this.height * 0.05 * direction );
+      this.y_pos = this.y_pos + ( this.height * 0.01 * direction );
     }
   }
 
@@ -199,6 +202,7 @@ window.onload = function () {
         object.set('y_pos', y);
         if (object.symbolType === 'img' ) this.canvas.drawImage(object.get('symbol'), x, y);
         if (object.symbolType === 'char' ) this.canvas.strokeText(object.get('symbol'), x, y);
+        if ( typeof object.ammo !== 'undefined' ) this.canvas.strokeText('Ammo: ' + object.get('ammo') + ' / 10', 0, 20);
       });
     }
     gameOver() {
@@ -240,16 +244,31 @@ window.onload = function () {
   EnemyBuilder(2, 50);
   display.addObject(airplane);
 
+  let activeKeys = {};
   document.addEventListener("keydown", function (event) {
-    const key = event.key;
-    // console.log(key);
-    if (key === 'w' || (key === 'w' && key === ' ' ) ) airplane.move(-1);
-    if (key === 's') airplane.move(1);
-    if (key === ' ') airplane.shoot(display);
+    activeKeys[event.key] = true;
+    console.log(event.key);
+    if ( event.key !== ' ' ) { 
+      activeKeys[event.key] = true;
+    }
+    if ( event.key === 'r' ) { 
+      airplane.ammo = 10;
+    }
   });
+
+  document.addEventListener("keypress", function (event) {
+    if (event.key === ' ' ) airplane.shoot(display);
+  });
+
+  document.addEventListener("keyup", function (event) {
+    delete activeKeys[event.key];
+  });
+
   let counter = 4;
   this.gameOver = false;
   const game = setInterval( function () {
+    if ( activeKeys['w'] ) airplane.move(-1);
+    if ( activeKeys['s'] ) airplane.move(1);
     let shots = [];
     let ufos = [];
     for (let i = 0; i <= display.objectRepository.length; i+=1 ) {
