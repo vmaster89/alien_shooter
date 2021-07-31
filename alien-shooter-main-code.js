@@ -181,10 +181,12 @@ window.onload = function () {
   const UfoRepository = [];
 
   //function createEnemies() {
-    //for ( let i = 0; i < 5; i+=1 ) {
-    setInterval( function () {
+    let space = 50;
+    for ( let i = 0; i < 5; i+=1 ) {
+    //setInterval( function () {
+      space += 50;
       const enemy = new Enemy(
-        display.gameWindow.width,
+        display.gameWindow.width - space,
         display.gameWindow.height,
         50,
         50,
@@ -192,10 +194,8 @@ window.onload = function () {
       );
       display.addObject(enemy);
       UfoRepository.push(enemy);
-    }, 500)
       
-  /* };
-  }*/
+    };
 
   display.addObject(airplane);
   display.refresh();
@@ -214,17 +214,17 @@ window.onload = function () {
       ufo.move();
       shots.forEach( (shot, i) => {
         let x = shot.get('x_pos');
-        shot.set('x_pos', x + airplane.height * 0.001 );
+        shot.set('x_pos', x + airplane.height * 0.005 );
         if (distance(shot, ufo) <= ufo.height * 0.59 ) {
           ufo.set('symbol', '\u{1F4A2}');
-          ufo.destroyed();
+          //ufo.destroyed();
         }
       });
     });
 
     // CleanUp 
     shots.forEach( ( shot, i ) => {
-      if ( shot.x_pos >= display.gameWindow.width ) {
+      if ( shot.x_pos > display.gameWindow.width ) {
         shots.splice(i, i+1);
       }
     }); 
@@ -240,7 +240,7 @@ window.onload = function () {
     display.refresh();
     lastRender = timestamp;
     window.requestAnimationFrame(loop);
-    // console.log(display.objectRepository.length);
+    console.log(display.objectRepository.length);
     // console.log(shots.length);
   }
   var lastRender = 0;
