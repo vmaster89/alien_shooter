@@ -27,14 +27,15 @@ window.onload = function () {
       height,
       width,
       symbol,
-      symbolType
+      symbolType,
+      alive
     ) {
       this.x_pos = x_pos;
       this.y_pos = y_pos;
       this.height = height;
       this.width = width;
       this.symbol = symbol;
-      this.alive = true;
+      this.alive = alive;
       this.symbolType = symbolType;
     }
     set(attr, value) {
@@ -56,7 +57,8 @@ window.onload = function () {
       height,
       width,
       symbol,
-      symbolType
+      symbolType,
+      alive
     ) {
       super(
         x_pos,
@@ -64,19 +66,20 @@ window.onload = function () {
         height,
         width,
         symbol,
-        symbolType
+        symbolType,
+        alive
       );
+      this.alive = alive;
     }
     shoot(display) {
-      let shotCounter = document.getElementById('shots');
-      shotCounter.innerText = parseInt(shotCounter.innerText)+1;
       const shot = new Ammo(
         this.x_pos,
         this.y_pos+22, // this should be done relatively in the future 
         1,
         1,
         '.',
-        'char'
+        'char',
+        true
       );
       display.addObject(shot);
     }
@@ -92,7 +95,8 @@ window.onload = function () {
       height,
       width,
       symbol,
-      symbolType
+      symbolType,
+      alive
     ) {
       super(
         x_pos,
@@ -100,8 +104,10 @@ window.onload = function () {
         height,
         width,
         symbol,
-        symbolType
+        symbolType,
+        alive
       );
+      this.alive = alive;
     }
   }
 
@@ -112,7 +118,8 @@ window.onload = function () {
       height,
       width,
       symbol,
-      symbolType
+      symbolType,
+      alive
     ) {
       super(
         x_pos,
@@ -120,17 +127,19 @@ window.onload = function () {
         height,
         width,
         symbol,
-        symbolType
+        symbolType,
+        alive
       );
       this.y_pos = Math.round(Math.random()*y_pos);
       this.x_pos = x_pos;
       this.direction = 1;
+      this.alive = alive;
     }
     move() {
-      if ( this.y_pos < 280 ) {
+      if ( this.y_pos < display.gameWindow.height ) {
         this.y_pos = this.y_pos + 1 * this.direction;
       }
-      if ( this.y_pos > 240 ) {
+      if ( this.y_pos > display.gameWindow.height - ( this.height ) ) {
         this.direction = -1;
         this.y_pos = this.y_pos + 1 * this.direction;
       }
@@ -139,7 +148,7 @@ window.onload = function () {
         this.y_pos = this.y_pos + 1 * this.direction;
       }
 
-      this.x_pos = this.x_pos - 2;
+      this.x_pos = this.x_pos - 1;
     }
   }
 
@@ -148,6 +157,7 @@ window.onload = function () {
       if (typeof Display.instance === 'object') {
         return Display.instance;
       }
+      this.stop = false;
       document.getElementById('gameWindow').height = height;
       document.getElementById('gameWindow').width = width;
       this.gameWindow = document.getElementById('gameWindow');
@@ -178,6 +188,7 @@ window.onload = function () {
       return this.objectRepository[i];
     }
     refresh() {
+      if ( this.stop ) return;
       this.canvas.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
       this.canvas.font = `${this.gameWindow.width*0.025}px Windings`;
       this.objectRepository.forEach((object) => {
@@ -186,9 +197,15 @@ window.onload = function () {
         if (y >= this.gameWindow.height - 20) y -= 20;
         if (y <= 10) y += 20;
         object.set('y_pos', y);
-        if (object.symbolType === 'img') this.canvas.drawImage(object.get('symbol'), x, y);
-        if (object.symbolType === 'char') this.canvas.strokeText(object.get('symbol'), x, y);
+        if (object.symbolType === 'img' ) this.canvas.drawImage(object.get('symbol'), x, y);
+        if (object.symbolType === 'char' ) this.canvas.strokeText(object.get('symbol'), x, y);
       });
+    }
+    gameOver() {
+      this.stop = true;
+      this.canvas.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
+      this.canvas.font = `100px Arial`;
+      this.canvas.strokeText('Game OVER!', this.gameWindow.width * 0.10, this.gameWindow.height * 0.5 );
     }
   }
 
@@ -200,7 +217,8 @@ window.onload = function () {
     display.gameWindow.height*0.5,
     display.gameWindow.height*0.5,
     document.getElementById('vehicle'),
-    'img'
+    'img',
+    true
   );
 
   function EnemyBuilder (count, space) {
@@ -212,7 +230,8 @@ window.onload = function () {
         50,
         50,
         '\u{1F6F8}',
-        'char'
+        'char',
+        true
       );
       display.addObject(enemy);
     }
@@ -223,14 +242,14 @@ window.onload = function () {
 
   document.addEventListener("keydown", function (event) {
     const key = event.key;
-    console.log(key);
-    if (key === 'w' || (key === 'w' && key === ' ' 
-    ) ) airplane.move(-1);
+    // console.log(key);
+    if (key === 'w' || (key === 'w' && key === ' ' ) ) airplane.move(-1);
     if (key === 's') airplane.move(1);
     if (key === ' ') airplane.shoot(display);
   });
   let counter = 4;
-  setInterval( function () {
+  this.gameOver = false;
+  const game = setInterval( function () {
     let shots = [];
     let ufos = [];
     for (let i = 0; i <= display.objectRepository.length; i+=1 ) {
@@ -252,15 +271,24 @@ window.onload = function () {
     ufos.forEach ( (ufo) => {
       ufo.move();
       shots.forEach( (shot, i) => {
-        if (distance(shot, ufo) <= ufo.height * 0.59 ) {
-          ufo.set('symbol', '');
+        // only shots should hit that haven't actually hit
+        // inactive shots do not have a symbol
+        if (distance(shot, ufo) <= ufo.height * 0.59 && shot.alive && ufo.alive ) {
+          shot.set('symbol', ' ');
+          shot.alive = false;
+          ufo.set('symbol', '$');
+          ufo.alive = false;
         }
       });
     });
 
     // CleanUp 
     display.objectRepository = display.objectRepository.filter( ( object ) => {
+      // console.log('OBJECT IS ALIVE OR NOT ALIVE: ' + object.alive);
       if ( object instanceof Enemy && object.x_pos > 0 ) {
+        return object;
+      }
+      if ( object.alive === true ) {
         return object;
       }
       if ( object instanceof Ammo && object.x_pos < display.gameWindow.width ) {
@@ -278,11 +306,20 @@ window.onload = function () {
 
     if (ufoCounter === 0) {
       EnemyBuilder(counter, 50);
-      counter = Math.round(counter * 1.2);
+      counter = Math.round( counter * 1.2);
     }
 
+    if ( ufoCounter > 0 ) {
+      ufos.forEach(( ufo ) => {
+        if ( ufo.x_pos < 0 ) {
+          display.gameOver();
+          ufos = [];
+          return;
+        }
+      });
+    } 
     display.refresh();
-    console.log(display.objectRepository.length);
+    // console.log(display.objectRepository.length);
   }, 10);
 }
 
