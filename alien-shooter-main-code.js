@@ -6,18 +6,16 @@
 */
 window.onload = function () {
   const distance = (o1, o2) => {
-    const x_square = Math.pow( o2.get('x_pos') * 0.5 - o1.get('x_pos') * 0.5, 2 );
-    const y_square = Math.pow( o2.get('y_pos') * 0.5 - o1.get('y_pos') * 0.5, 2 );
-    return Math.sqrt( x_square + y_square );
-    /*if ( o1.x_pos > o2.x_pos + o2.width || 
-          o1.x_pos + o1.width < o2.x_pos || 
-          o1.y_pos > o2.y_pos + o2.height || 
-          o1.y_pos + o1.height < o2.y_pos )
-      {
-        return 100;
-      } else {
-        return 0;
-      }*/
+    /* const x_square = Math.pow( o2.get('x_pos') - o1.get('x_pos'), 2 );
+    const y_square = Math.pow( o2.get('y_pos') - o1.get('y_pos'), 2 );
+    return Math.sqrt( x_square + y_square );*/
+    if (o1.x_pos < o2.x_pos + o2.width &&
+      o1.x_pos + o1.width > o2.x_pos &&
+      o1.y_pos  < o2.y_pos  + o2.height &&
+      o1.y_pos  + o1.height > o2.y_pos ) {
+        return true;
+    }
+    return false;
   }
 
   class Figure {
@@ -75,6 +73,8 @@ window.onload = function () {
       this.backspeed = 0;
       this.acceleration = 0;
       this.start_x_pos = x_pos;
+      this.shield = false;
+      this.shieldPower = 100;
     }
     shoot(display) {
       if ( this.ammo <= 0 ) return;
@@ -82,11 +82,12 @@ window.onload = function () {
       const shot = new Ammo(
         this.x_pos,
         this.y_pos+22, // this should be done relatively in the future 
-        1,
-        1,
+        15,
+        2,
         document.getElementById('shot'),
         'img',
-        true
+        true, // alive 
+        true // heroAmmo
       );
       display.addObject(shot);
     }
@@ -97,24 +98,37 @@ window.onload = function () {
       }
     }
     move(direction) {
-      this.y_pos = this.y_pos + ( this.height * 0.01 * direction );
+      this.y_pos = this.y_pos + ( this.height * 0.05 * direction );
     }
     accelerate() {
-      this.acceleration = this.acceleration + 0.2;
+      this.acceleration = this.acceleration + 0.4;
       if ( this.x_pos < ( this.start_x_pos * 20 ) ) {
         this.speed = 0.1 * this.acceleration;
         this.x_pos = this.x_pos + this.speed;
       }
+      this.symbol = document.getElementById('vehicle_faster');
     }
     break(manual) {
+      this.symbol = document.getElementById('vehicle');
       this.backspeed = this.backspeed || 0.1;
-      if ( manual && this.backspeed > 0 ) this.backspeed = 0.5;
+      if ( manual && this.backspeed > 0 ) this.backspeed = 1.1;
       if ( this.acceleration >= 4 ) this.acceleration = 0;
       if ( this.x_pos > ( this.start_x_pos ) && !(this.x_pos <= 0 )) {
-        this.backspeed = ( this.backspeed * 1.1 ) - ( ( this.backspeed ) * (-0.5) );
+        this.backspeed = ( this.backspeed * 1.2 ) - ( ( this.backspeed ) * (-0.5) );
         this.x_pos = this.x_pos - this.backspeed;
       }
       this.backspeed = 0;
+    }
+    activateShield(activation) {
+      console.log(activation);
+      if ( activation && this.acceleration === 0 && this.shieldPower >= 1 ) {
+        this.shield = true;
+        this.symbol = document.getElementById('vehicle_shield');
+        this.shieldPower = this.shieldPower - 1;
+      } else {
+        this.shield = false; 
+        this.symbol = document.getElementById('vehicle');
+      }
     }
   }
 
@@ -126,7 +140,8 @@ window.onload = function () {
       width,
       symbol,
       symbolType,
-      alive
+      alive,
+      isAmmoOfhero
     ) {
       super(
         x_pos,
@@ -138,6 +153,7 @@ window.onload = function () {
         alive
       );
       this.alive = alive;
+      this.isAmmoOfhero = isAmmoOfhero;
     }
   }
 
@@ -162,8 +178,12 @@ window.onload = function () {
       );
       this.y_pos = Math.round(Math.random()*y_pos);
       this.x_pos = x_pos;
+      /*if ( this.x_pos <= display.gameWindow.width * 0.5) {
+        this.x_pos = display.gameWindow.width * 0.8;
+      }*/
       this.direction = 1;
       this.alive = alive;
+      this.itemTaken = false;
     }
     move() {
       if ( this.y_pos < display.gameWindow.height ) {
@@ -178,6 +198,24 @@ window.onload = function () {
         this.y_pos = this.y_pos + 1 * this.direction;
       }
       this.x_pos = this.x_pos - 1;
+    }
+    shoot( heroPos, pCorrection, display ) {
+      // pCorrection influences the probability 
+      let shotDecision = ( Math.random() * 100 )  > ( 99.8 ) ? true: false;
+      //if ( heroPos.y_pos >= this.y_pos - ( this.y_pos + ( this.height / 2 ) ) &&  heroPos.y_pos > this.y_pos + ( this.height * 2) ) {
+        if ( shotDecision && this.alive ) {
+          display.addObject(new Ammo(
+            this.x_pos,
+            this.y_pos+22, // this should be done relatively in the future 
+            15,
+            2,
+            document.getElementById('shot_enemy1'),
+            'img',
+            true, // alive 
+            false // heroAmmo
+          ));
+        }
+      //}
     }
   }
 
@@ -242,16 +280,16 @@ window.onload = function () {
         });
       }
     }
-    drawHealthBar () {
+    drawBar (width, percent, color) {
       this.canvas.beginPath();
       this.canvas.lineWidth = "10";
       this.canvas.strokeStyle = "red";
-      this.canvas.rect(display.gameWindow.width - 110, 10, 100, 10);
+      this.canvas.rect(width - 110, 10, 100, 10);
       this.canvas.stroke();
       this.canvas.beginPath();
       this.canvas.lineWidth = "10";
-      this.canvas.strokeStyle = "green";
-      this.canvas.rect(display.gameWindow.width - 110, 10, this.health, 10);
+      this.canvas.strokeStyle = color;
+      this.canvas.rect(width - 110, 10, percent, 10);
       this.canvas.stroke();
     }
     refresh() {
@@ -266,9 +304,10 @@ window.onload = function () {
         if (y <= 10) y += 20;
         object.set('y_pos', y);
         this.canvas.fillText(` Score: ${this.highscore}`, 400, 20);
-        if (object.symbolType === 'img' ) this.canvas.drawImage(object.get('symbol'), x, y);
-        if ( typeof object.ammo !== 'undefined' ) this.canvas.fillText('Ammo: ' + object.get('ammo') + ' / 10', 0, 20);
-        this.drawHealthBar();
+        if (object.symbolType === 'img' ) this.canvas.drawImage(object.get('symbol'), x, y, object.height, object.width);
+        if ( typeof object.ammo !== 'undefined' ) this.canvas.fillText('Ammo: ' + object.get('ammo') + ' / 10', 10, 20);
+        this.drawBar(display.gameWindow.width - 140, this.health, 'green');
+        if (object.shieldPower) this.drawBar(display.gameWindow.width - 10, object.shieldPower, 'blue');
       });
     }
     gameOver() {
@@ -289,10 +328,10 @@ window.onload = function () {
   const display = new Display(400, 1000);
 
   const airplane = new Hero(
-    display.gameWindow.height*0.025,
+    display.gameWindow.width*0.025,
     display.gameWindow.height/2,
-    display.gameWindow.height*0.5,
-    display.gameWindow.height*0.5,
+    display.gameWindow.width*0.04,
+    display.gameWindow.height*0.05,
     document.getElementById('vehicle'),
     'img',
     true
@@ -302,10 +341,10 @@ window.onload = function () {
     for (let i = 0; i <= count-1; i+=1 ) {
       space += 50;
       const enemy = new Enemy(
-        display.gameWindow.width - space,
+        display.gameWindow.width + space,
         display.gameWindow.height,
-        50,
-        50,
+        display.gameWindow.width*0.1/2,
+        display.gameWindow.height*0.1,
         document.getElementById('ufo'),
         'img',
         true
@@ -319,6 +358,7 @@ window.onload = function () {
 
   let activeKeys = {};
   document.addEventListener("keydown", function (event) {
+    console.log(event.key);
     activeKeys[event.key] = true;
     if ( event.key !== ' ' ) { 
       activeKeys[event.key] = true;
@@ -343,6 +383,13 @@ window.onload = function () {
     if ( activeKeys['ArrowDown'] ) airplane.move(1);
     if ( activeKeys['ArrowRight'] ) airplane.accelerate();
     if ( activeKeys['ArrowLeft'] ) airplane.break(true);
+    if ( activeKeys['Control'] ) {
+      airplane.activateShield(true);
+    } else { 
+      airplane.shield = false;
+      if ( airplane.accelerate === 0 )airplane.symbol = document.getElementById('vehicle');
+      if ( airplane.shieldPower < 100 ) airplane.shieldPower = airplane.shieldPower + 1;
+    } 
     let shots = [];
     let ufos = [];
     for (let i = 0; i <= display.objectRepository.length; i+=1 ) {
@@ -357,20 +404,28 @@ window.onload = function () {
 
     if (shots.length >= 1) {
       shots.forEach( (shot, i) => {
-        shot.x_pos = shot.x_pos + airplane.height * 0.01;
+        if ( shot.isAmmoOfhero ) {
+          shot.x_pos = shot.x_pos + airplane.width * 0.2;
+        }
+        if ( !shot.isAmmoOfhero ) {
+          shot.x_pos = shot.x_pos - airplane.width * 0.1;
+        }
       });
     }
 
     ufos.forEach ( (ufo) => {
+      ufo.shoot( airplane, 50, display );
       ufo.move();
-      if (distance(airplane, ufo) <= ( ufo.height * 0.5 ) && airplane.alive && !ufo.alive ) {
+      if (distance(airplane, ufo) && airplane.alive && !ufo.alive && !ufo.itemTaken ) {
         ufo.set('symbolType', 'char'); 
+        ufo.set('itemTaken', true);
+        // Gives to many points because invisible ufos is also touched 
         display.highscore = display.highscore + 5;
         ufo.set('symbol', '');
         airplane.addAmmo(1);
       }
 
-      if (distance(airplane, ufo) <= ufo.height * 0.59 && airplane.alive && ufo.alive ) {
+      if (distance(airplane, ufo) && airplane.alive && ufo.alive ) {
         display.highscore = display.highscore - 10;
         display.health = display.health - 1;
       }
@@ -378,12 +433,18 @@ window.onload = function () {
       shots.forEach( (shot, i) => {
         // only shots should hit that haven't actually hit
         // inactive shots do not have a symbol
-        if (distance(shot, ufo) <= ufo.height * 0.25 && shot.alive && ufo.alive ) {
+        if (distance(shot, ufo) && shot.alive && shot.isAmmoOfhero && ufo.alive ) {
           shot.set('symbol', document.getElementById('white'));
           shot.alive = false;
           display.highscore = display.highscore + 10;
           ufo.set('symbol', document.getElementById('ammo'));
           ufo.alive = false;
+        }
+        if (distance(shot, airplane) && shot.alive && !shot.isAmmoOfhero && !airplane.shield ) {
+          shot.set('symbol', document.getElementById('white'));
+          shot.alive = false;
+          display.highscore = display.highscore - 5;
+          display.health = display.health - 5;
         }
       });
     });
@@ -396,7 +457,7 @@ window.onload = function () {
       if ( object.alive === true ) {
         return object;
       }
-      if ( object instanceof Ammo && object.x_pos < display.gameWindow.width ) {
+      if ( object instanceof Ammo && ( object.x_pos > 0 && object.x_pos < display.gameWindow.width ) ) {
         return object;
       }
       if ( object instanceof Hero ){
