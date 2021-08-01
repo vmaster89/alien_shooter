@@ -84,8 +84,8 @@ window.onload = function () {
         this.y_pos+22, // this should be done relatively in the future 
         1,
         1,
-        '.',
-        'char',
+        document.getElementById('shot'),
+        'img',
         true
       );
       display.addObject(shot);
@@ -203,6 +203,7 @@ window.onload = function () {
       this.canvas.font = '25px Consolas';
       this.objectRepository = [];
       this.highscore = 0;
+      this.health = 100;
     }
     setResolution(option) {
       switch (option) {
@@ -241,6 +242,18 @@ window.onload = function () {
         });
       }
     }
+    drawHealthBar () {
+      this.canvas.beginPath();
+      this.canvas.lineWidth = "10";
+      this.canvas.strokeStyle = "red";
+      this.canvas.rect(display.gameWindow.width - 110, 10, 100, 10);
+      this.canvas.stroke();
+      this.canvas.beginPath();
+      this.canvas.lineWidth = "10";
+      this.canvas.strokeStyle = "green";
+      this.canvas.rect(display.gameWindow.width - 110, 10, this.health, 10);
+      this.canvas.stroke();
+    }
     refresh() {
       if ( this.stop ) return;
       this.canvas.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
@@ -254,8 +267,8 @@ window.onload = function () {
         object.set('y_pos', y);
         this.canvas.fillText(` Score: ${this.highscore}`, 400, 20);
         if (object.symbolType === 'img' ) this.canvas.drawImage(object.get('symbol'), x, y);
-        if (object.symbolType === 'char' ) this.canvas.strokeText(object.get('symbol'), x, y);
         if ( typeof object.ammo !== 'undefined' ) this.canvas.fillText('Ammo: ' + object.get('ammo') + ' / 10', 0, 20);
+        this.drawHealthBar();
       });
     }
     gameOver() {
@@ -359,13 +372,14 @@ window.onload = function () {
 
       if (distance(airplane, ufo) <= ufo.height * 0.59 && airplane.alive && ufo.alive ) {
         display.highscore = display.highscore - 10;
+        display.health = display.health - 1;
       }
 
       shots.forEach( (shot, i) => {
         // only shots should hit that haven't actually hit
         // inactive shots do not have a symbol
         if (distance(shot, ufo) <= ufo.height * 0.25 && shot.alive && ufo.alive ) {
-          shot.set('symbol', ' ');
+          shot.set('symbol', document.getElementById('white'));
           shot.alive = false;
           display.highscore = display.highscore + 10;
           ufo.set('symbol', document.getElementById('ammo'));
@@ -398,6 +412,11 @@ window.onload = function () {
     if (ufoCounter === 0) {
       EnemyBuilder(counter, 50);
       counter = Math.round( counter * 1.2);
+    }
+
+    if ( display.health <= 0 ) {
+      display.gameOver();
+      clearInterval(game);
     }
 
     if ( ufoCounter > 0 ) {
