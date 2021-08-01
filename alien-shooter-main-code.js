@@ -1,13 +1,13 @@
 /*
   Alien Shooter 1.0 alpha 
-  Move up: w
-  Move down: s
+  Move up: Up
+  Move down: Down
   Shoot: Space (can only shoot again if ammo is off screen)
 */
 window.onload = function () {
   const distance = (o1, o2) => {
-    const x_square = Math.pow( o2.get('x_pos') - o1.get('x_pos'), 2 );
-    const y_square = Math.pow( o2.get('y_pos') - o1.get('y_pos'), 2 );
+    const x_square = Math.pow( o2.get('x_pos') * 0.5 - o1.get('x_pos') * 0.5, 2 );
+    const y_square = Math.pow( o2.get('y_pos') * 0.5 - o1.get('y_pos') * 0.5, 2 );
     return Math.sqrt( x_square + y_square );
     /*if ( o1.x_pos > o2.x_pos + o2.width || 
           o1.x_pos + o1.width < o2.x_pos || 
@@ -244,6 +244,7 @@ window.onload = function () {
     refresh() {
       if ( this.stop ) return;
       this.canvas.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
+      this.canvas.fillStyle = 'black';
       this.drawBackground();
       this.objectRepository.forEach((object) => {
         let x = object.get('x_pos'),
@@ -251,21 +252,21 @@ window.onload = function () {
         if (y >= this.gameWindow.height - 20) y -= 20;
         if (y <= 10) y += 20;
         object.set('y_pos', y);
-        this.canvas.strokeText(` Score: ${this.highscore}`, 400, 20);
+        this.canvas.fillText(` Score: ${this.highscore}`, 400, 20);
         if (object.symbolType === 'img' ) this.canvas.drawImage(object.get('symbol'), x, y);
         if (object.symbolType === 'char' ) this.canvas.strokeText(object.get('symbol'), x, y);
-        if ( typeof object.ammo !== 'undefined' ) this.canvas.strokeText('Ammo: ' + object.get('ammo') + ' / 10', 0, 20);
+        if ( typeof object.ammo !== 'undefined' ) this.canvas.fillText('Ammo: ' + object.get('ammo') + ' / 10', 0, 20);
       });
     }
     gameOver() {
       this.stop = true;
-      this.canvas.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
       this.drawBackground();
+      // this.canvas.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
       this.canvas.font = '100px Arial';
-      var gradient = ctx.createLinearGradient(0, 0, c.width, 0);
-      gradient.addColorStop("0", "#990000");
-      gradient.addColorStop("0.5", "#CC0000");
-      gradient.addColorStop("1.0", "#FF3333");
+      var gradient = this.canvas.createLinearGradient(0, 0, this.gameWindow.width, 0);
+      gradient.addColorStop("0", "red");
+      gradient.addColorStop("0.5", "red");
+      gradient.addColorStop("1.0", "green");
       this.canvas.fillStyle = gradient;
       this.canvas.fillText('Game OVER!', this.gameWindow.width * 0.10, this.gameWindow.height * 0.25 );
       this.canvas.fillText(`Highscore: ${this.highscore}`, this.gameWindow.width * 0.10, this.gameWindow.height * 0.5 );
@@ -349,7 +350,7 @@ window.onload = function () {
 
     ufos.forEach ( (ufo) => {
       ufo.move();
-      if (distance(airplane, ufo) <= ufo.height * 0.59 && airplane.alive && !ufo.alive ) {
+      if (distance(airplane, ufo) <= ( ufo.height * 0.5 ) && airplane.alive && !ufo.alive ) {
         ufo.set('symbolType', 'char'); 
         display.highscore = display.highscore + 5;
         ufo.set('symbol', '');
