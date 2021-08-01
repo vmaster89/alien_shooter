@@ -71,6 +71,10 @@ window.onload = function () {
       );
       this.alive = alive;
       this.ammo = 10;
+      this.speed = 0;
+      this.backspeed = 0;
+      this.acceleration = 0;
+      this.start_x_pos = x_pos;
     }
     shoot(display) {
       if ( this.ammo <= 0 ) return;
@@ -86,8 +90,30 @@ window.onload = function () {
       );
       display.addObject(shot);
     }
+    addAmmo(count) {
+      if (this.ammo < 10) {
+        this.ammo += count;
+        this.ammo = this.ammo > 10 ? 10 : this.ammo;
+      }
+    }
     move(direction) {
       this.y_pos = this.y_pos + ( this.height * 0.01 * direction );
+    }
+    accelerate() {
+      this.acceleration = this.acceleration + 0.2;
+      if ( this.x_pos < ( this.start_x_pos * 20 ) ) {
+        this.speed = 0.1 * this.acceleration;
+        console.log(this.acceleration);
+        this.x_pos = this.x_pos + this.speed;
+      }
+    }
+    break() {
+      if ( this.acceleration >= 2 ) this.acceleration = 0;
+      if ( this.x_pos > ( this.start_x_pos ) && !(this.x_pos <= 0 )) {
+        this.backspeed = this.speed - ( ( 1.1 + this.backspeed ) * (-0.5) );
+        this.x_pos = this.x_pos - this.backspeed;
+      }
+      this.backspeed = 0;
     }
   }
 
@@ -150,7 +176,6 @@ window.onload = function () {
         this.direction = 1;
         this.y_pos = this.y_pos + 1 * this.direction;
       }
-
       this.x_pos = this.x_pos - 1;
     }
   }
@@ -233,8 +258,8 @@ window.onload = function () {
         display.gameWindow.height,
         50,
         50,
-        '\u{1F6F8}',
-        'char',
+        document.getElementById('ufo'),
+        'img',
         true
       );
       display.addObject(enemy);
@@ -251,9 +276,9 @@ window.onload = function () {
     if ( event.key !== ' ' ) { 
       activeKeys[event.key] = true;
     }
-    if ( event.key === 'r' ) { 
+    /*if ( event.key === 'r' ) { 
       airplane.ammo = 10;
-    }
+    }*/
   });
 
   document.addEventListener("keypress", function (event) {
@@ -267,8 +292,13 @@ window.onload = function () {
   let counter = 4;
   this.gameOver = false;
   const game = setInterval( function () {
-    if ( activeKeys['w'] ) airplane.move(-1);
-    if ( activeKeys['s'] ) airplane.move(1);
+    if (airplane.x_pos > airplane.start_x_pos && !activeKeys['ArrowRight'] ) {
+      airplane.break();
+    }
+    if ( activeKeys['ArrowUp'] ) airplane.move(-1);
+    if ( activeKeys['ArrowDown'] ) airplane.move(1);
+    if ( activeKeys['ArrowRight'] ) airplane.accelerate();
+    //if ( activeKeys['ArrowLeft'] ) airplane.break();
     let shots = [];
     let ufos = [];
     for (let i = 0; i <= display.objectRepository.length; i+=1 ) {
@@ -289,13 +319,19 @@ window.onload = function () {
 
     ufos.forEach ( (ufo) => {
       ufo.move();
+      if (distance(airplane, ufo) <= ufo.height * 0.59 && airplane.alive && !ufo.alive ) {
+        ufo.set('symbolType', 'char'); 
+        ufo.set('symbol', '');
+        airplane.addAmmo(1);
+      }
+
       shots.forEach( (shot, i) => {
         // only shots should hit that haven't actually hit
         // inactive shots do not have a symbol
-        if (distance(shot, ufo) <= ufo.height * 0.59 && shot.alive && ufo.alive ) {
+        if (distance(shot, ufo) <= ufo.height * 0.25 && shot.alive && ufo.alive ) {
           shot.set('symbol', ' ');
           shot.alive = false;
-          ufo.set('symbol', '$');
+          ufo.set('symbol', document.getElementById('ammo'));
           ufo.alive = false;
         }
       });
