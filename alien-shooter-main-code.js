@@ -107,10 +107,12 @@ window.onload = function () {
         this.x_pos = this.x_pos + this.speed;
       }
     }
-    break() {
-      if ( this.acceleration >= 2 ) this.acceleration = 0;
+    break(manual) {
+      this.backspeed = this.backspeed || 0.1;
+      if ( manual && this.backspeed > 0 ) this.backspeed = 0.5;
+      if ( this.acceleration >= 4 ) this.acceleration = 0;
       if ( this.x_pos > ( this.start_x_pos ) && !(this.x_pos <= 0 )) {
-        this.backspeed = this.speed - ( ( 1.1 + this.backspeed ) * (-0.5) );
+        this.backspeed = ( this.backspeed * 1.1 ) - ( ( this.backspeed ) * (-0.5) );
         this.x_pos = this.x_pos - this.backspeed;
       }
       this.backspeed = 0;
@@ -191,6 +193,7 @@ window.onload = function () {
       this.gameWindow = document.getElementById('gameWindow');
       this.canvas = this.gameWindow.getContext("2d");
       this.objectRepository = [];
+      this.highscore = 0;
     }
     setResolution(option) {
       switch (option) {
@@ -225,6 +228,7 @@ window.onload = function () {
         if (y >= this.gameWindow.height - 20) y -= 20;
         if (y <= 10) y += 20;
         object.set('y_pos', y);
+        this.canvas.strokeText(` Score: ${this.highscore}`, 400, 20);
         if (object.symbolType === 'img' ) this.canvas.drawImage(object.get('symbol'), x, y);
         if (object.symbolType === 'char' ) this.canvas.strokeText(object.get('symbol'), x, y);
         if ( typeof object.ammo !== 'undefined' ) this.canvas.strokeText('Ammo: ' + object.get('ammo') + ' / 10', 0, 20);
@@ -298,7 +302,7 @@ window.onload = function () {
     if ( activeKeys['ArrowUp'] ) airplane.move(-1);
     if ( activeKeys['ArrowDown'] ) airplane.move(1);
     if ( activeKeys['ArrowRight'] ) airplane.accelerate();
-    //if ( activeKeys['ArrowLeft'] ) airplane.break();
+    if ( activeKeys['ArrowLeft'] ) airplane.break(true);
     let shots = [];
     let ufos = [];
     for (let i = 0; i <= display.objectRepository.length; i+=1 ) {
@@ -321,8 +325,13 @@ window.onload = function () {
       ufo.move();
       if (distance(airplane, ufo) <= ufo.height * 0.59 && airplane.alive && !ufo.alive ) {
         ufo.set('symbolType', 'char'); 
+        display.highscore = display.highscore + 5;
         ufo.set('symbol', '');
         airplane.addAmmo(1);
+      }
+
+      if (distance(airplane, ufo) <= ufo.height * 0.59 && airplane.alive && ufo.alive ) {
+        display.highscore = display.highscore - 10;
       }
 
       shots.forEach( (shot, i) => {
@@ -331,6 +340,7 @@ window.onload = function () {
         if (distance(shot, ufo) <= ufo.height * 0.25 && shot.alive && ufo.alive ) {
           shot.set('symbol', ' ');
           shot.alive = false;
+          display.highscore = display.highscore + 10;
           ufo.set('symbol', document.getElementById('ammo'));
           ufo.alive = false;
         }
