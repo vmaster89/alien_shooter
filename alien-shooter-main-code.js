@@ -103,7 +103,6 @@ window.onload = function () {
       this.acceleration = this.acceleration + 0.2;
       if ( this.x_pos < ( this.start_x_pos * 20 ) ) {
         this.speed = 0.1 * this.acceleration;
-        console.log(this.acceleration);
         this.x_pos = this.x_pos + this.speed;
       }
     }
@@ -191,7 +190,17 @@ window.onload = function () {
       document.getElementById('gameWindow').height = height;
       document.getElementById('gameWindow').width = width;
       this.gameWindow = document.getElementById('gameWindow');
+      this.background = [];
+      for (let i = 0; i < 2; i += 1) {
+        this.background.push({
+          image: document.getElementById('bg'),
+          x_pos: 0,
+        });
+      }
+      this.background[1].x_pos = this.gameWindow.width;
+      this.bg_x_pos = 0;
       this.canvas = this.gameWindow.getContext("2d");
+      this.canvas.font = '25px Consolas';
       this.objectRepository = [];
       this.highscore = 0;
     }
@@ -218,10 +227,24 @@ window.onload = function () {
     getObjectInstance(i) {
       return this.objectRepository[i];
     }
+    drawBackground () {
+      // Use Gameloop
+      this.background[0].x_pos = this.background[0].x_pos - 0.5;
+      this.canvas.drawImage(this.background[0].image, this.background[0].x_pos, 0, this.gameWindow.width, this.gameWindow.height);
+      this.background[1].x_pos = this.background[1].x_pos - 0.5;
+      this.canvas.drawImage(this.background[1].image, this.background[1].x_pos, 0, this.gameWindow.width, this.gameWindow.height);
+      if ( this.background[0].x_pos <= 0-this.gameWindow.width ) {
+        this.background.shift();
+        this.background.push({
+          image: document.getElementById('bg'),
+          x_pos: this.gameWindow.width,
+        });
+      }
+    }
     refresh() {
       if ( this.stop ) return;
       this.canvas.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
-      this.canvas.font = `${this.gameWindow.width*0.025}px Windings`;
+      this.drawBackground();
       this.objectRepository.forEach((object) => {
         let x = object.get('x_pos'),
           y = object.get('y_pos');
@@ -238,7 +261,8 @@ window.onload = function () {
       this.stop = true;
       this.canvas.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
       this.canvas.font = `100px Arial`;
-      this.canvas.strokeText('Game OVER!', this.gameWindow.width * 0.10, this.gameWindow.height * 0.5 );
+      this.canvas.strokeText('Game OVER!', this.gameWindow.width * 0.10, this.gameWindow.height * 0.25 );
+      this.canvas.strokeText(`Highscore: ${this.highscore}`, this.gameWindow.width * 0.10, this.gameWindow.height * 0.5 );
     }
   }
 
@@ -276,13 +300,9 @@ window.onload = function () {
   let activeKeys = {};
   document.addEventListener("keydown", function (event) {
     activeKeys[event.key] = true;
-    console.log(event.key);
     if ( event.key !== ' ' ) { 
       activeKeys[event.key] = true;
     }
-    /*if ( event.key === 'r' ) { 
-      airplane.ammo = 10;
-    }*/
   });
 
   document.addEventListener("keypress", function (event) {
@@ -349,7 +369,6 @@ window.onload = function () {
 
     // CleanUp 
     display.objectRepository = display.objectRepository.filter( ( object ) => {
-      // console.log('OBJECT IS ALIVE OR NOT ALIVE: ' + object.alive);
       if ( object instanceof Enemy && object.x_pos > 0 ) {
         return object;
       }
@@ -379,6 +398,7 @@ window.onload = function () {
         if ( ufo.x_pos < 0 ) {
           display.gameOver();
           ufos = [];
+          clearInterval(game);
           return;
         }
       });

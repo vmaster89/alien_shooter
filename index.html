@@ -2,21 +2,24 @@
   <head>
     <title>Small Game</title>
   </head>
-  <script src="./alien-shooter-main-code.js"></script>
+  <script src="./alien-shooter-main-code.min.js"></script>
   <body>
     <!--<label for="resolution">resolution:</label>
     <select name="resolution" id="resolution">
       <option value="1">1024x786</option>
       <option value="2">1280x720</option>
     </select> -->
-    <h1 style="text-align: center;" style="font-family: Arial;">Alien Shooter - v. 1.0.1 alpha</h1>
-    <br /> 
-    <br />
-    <img  id="vehicle" src="vehicle.png" width="300" height="227" style="display:none;">
-    <img  id="ufo" src="ufo.png" width="300" height="227" style="display:none;">
-    <img  id="ammo" src="ammo.png" width="300" height="227" style="display:none;">
-      <canvas id="gameWindow" style="border:1px solid #d3d3d3; width: 100%; height: 80%"></canvas>
+    <div class="container">
+      <h1 style="text-align: center;" style="font-family: Arial;">Alien Shooter - v. 1.0.1 alpha</h1>
       <br /> 
+      <br />
+      <img  id="vehicle" src="vehicle.png" width="300" height="227" style="display:none;">
+      <img  id="ufo" src="ufo.png" width="300" height="227" style="display:none;">
+      <img  id="ammo" src="ammo.png" width="300" height="227" style="display:none;">
+      <img  id="bg" src="bg.png" style="display:none;">
+        <canvas id="gameWindow" style="border:1px solid #d3d3d3; width: 100%; height: 80%"></canvas>
+
+
       <!--<span id="Life" style="display: none">5</span> &#x2764; &#x2764; &#x2764; &#x2764; &#x2764;
       <br /> 
       <strong>Shots:</strong> <span id="shots">0</span>-->

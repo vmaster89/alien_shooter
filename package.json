@@ -1,0 +1,25 @@
+{
+  "name": "alien_shooter",
+  "version": "1.0.1",
+  "description": "Alpha Version",
+  "main": "index.html",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node ./node_modules/minify/bin/minify.js --js alien-shooter-main-code.js > alien-shooter-main-code.min.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vmaster89/alien_shooter.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/vmaster89/alien_shooter/issues"
+  },
+  "homepage": "https://github.com/vmaster89/alien_shooter#readme",
+  "dependencies": {
+    "fs": "0.0.1-security",
+    "fs-promise": "^2.0.3",
+    "minify": "^7.0.2"
+  }
+}
