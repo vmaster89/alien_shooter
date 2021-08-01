@@ -422,7 +422,7 @@ window.onload = function () {
         // Gives to many points because invisible ufos is also touched 
         display.highscore = display.highscore + 5;
         ufo.set('symbol', '');
-        airplane.addAmmo(1);
+        airplane.addAmmo(5);
       }
 
       if (distance(airplane, ufo) && airplane.alive && ufo.alive ) {
