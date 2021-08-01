@@ -1,7 +1,7 @@
 # alien_shooter
-Coder: vmaster89 
-Website: vmaster.de
-Online Demo: mroesner.com/game/ (might not be the same as hosted here)
+Coder: vmaster89 \n\r
+Website: vmaster.de \n\r
+Online Demo: mroesner.com/game/ (might not be the same as hosted here) \n\r
 
 # Version 
 0.1.0 
@@ -11,15 +11,13 @@ Online Demo: mroesner.com/game/ (might not be the same as hosted here)
 Clone the repository and execute the index.html file 
 
 ## Controls 
-[ARROW_UP] Move up
-[ARROW_DOWN] Move down 
-[ARROW_LEFT] Break
-[ARROW_RIGHT] Accelerate 
-[SPACE] Shoot
-[F5] Restart 
-[F11] Fullscreen
-
-First alpha version of a small js game made with jsfiddle 
+[ARROW_UP] Move up \n\r
+[ARROW_DOWN] Move down \n\r
+[ARROW_LEFT] Break \n\r
+[ARROW_RIGHT] Accelerate \n\r
+[SPACE] Shoot \n\r
+[F5] Restart \n\r
+[F11] Fullscreen \n\r
 
 # Graphics 
 Tool: https://www.pixilart.com/draw
