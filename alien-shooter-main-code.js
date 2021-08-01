@@ -197,7 +197,7 @@ window.onload = function () {
           x_pos: 0,
         });
       }
-      this.background[1].x_pos = this.gameWindow.width;
+      this.background[1].x_pos = this.gameWindow.width-2;
       this.bg_x_pos = 0;
       this.canvas = this.gameWindow.getContext("2d");
       this.canvas.font = '25px Consolas';
@@ -237,7 +237,7 @@ window.onload = function () {
         this.background.shift();
         this.background.push({
           image: document.getElementById('bg'),
-          x_pos: this.gameWindow.width,
+          x_pos: this.gameWindow.width-2,
         });
       }
     }
@@ -260,9 +260,15 @@ window.onload = function () {
     gameOver() {
       this.stop = true;
       this.canvas.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
-      this.canvas.font = `100px Arial`;
-      this.canvas.strokeText('Game OVER!', this.gameWindow.width * 0.10, this.gameWindow.height * 0.25 );
-      this.canvas.strokeText(`Highscore: ${this.highscore}`, this.gameWindow.width * 0.10, this.gameWindow.height * 0.5 );
+      this.drawBackground();
+      this.canvas.font = '100px Arial';
+      var gradient = ctx.createLinearGradient(0, 0, c.width, 0);
+      gradient.addColorStop("0", "#990000");
+      gradient.addColorStop("0.5", "#CC0000");
+      gradient.addColorStop("1.0", "#FF3333");
+      this.canvas.fillStyle = gradient;
+      this.canvas.fillText('Game OVER!', this.gameWindow.width * 0.10, this.gameWindow.height * 0.25 );
+      this.canvas.fillText(`Highscore: ${this.highscore}`, this.gameWindow.width * 0.10, this.gameWindow.height * 0.5 );
     }
   }
 
