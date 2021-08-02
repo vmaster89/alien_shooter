@@ -26,6 +26,8 @@ Tool: https://www.pixilart.com/draw
 # Major Changes 
 ## v. 1.2.0
 [ADDED] Player Feedback: Healthbar<br />
+[FIXED] Player score below zero<br />
+[CHANGED] Highscore to just score<br />
 
 ## v. 1.1.0 stable
 [ADDED] Ammo Indication<br />

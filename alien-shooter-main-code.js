@@ -261,7 +261,7 @@ function gameScreen() {
       this.canvas = this.gameWindow.getContext("2d");
       this.canvas.font = '25px Consolas';
       this.objectRepository = [];
-      this.highscore = 0;
+      this.score = 0;
       this.health = 100;
     }
     setResolution(option) {
@@ -313,10 +313,10 @@ function gameScreen() {
       this.canvas.rect(width - 110, 10, percent, 10);
       this.canvas.stroke();
     }
-    addNumberToHighscore(x) {
-      // Highscore should never be below zero 
-      this.highscore = this.highscore + x;
-      this.highscore = this.highscore <= 0 ? 0 : this.highscore;
+    addNumberToscore(x) {
+      // score should never be below zero 
+      this.score = this.score + x;
+      this.score = this.score <= 0 ? 0 : this.score;
     }
     refresh() {
       if ( this.stop ) return;
@@ -330,7 +330,7 @@ function gameScreen() {
         if (y <= 10) y += 20;
         object.set('y_pos', y);
         this.gameWindow.font = '25px  Consolas';
-        this.canvas.fillText(` Score: ${this.highscore}`, 400, 20);
+        this.canvas.fillText(` Score: ${this.score}`, 400, 20);
         if (object.symbolType === 'img' ) this.canvas.drawImage(object.get('symbol'), x, y, object.height, object.width);
         this.gameWindow.font = '25px  Consolas';
         if ( typeof object.ammo !== 'undefined' ) this.canvas.fillText('Ammo: ' + object.get('ammo') + ' / 10', 10, 20);
@@ -349,7 +349,7 @@ function gameScreen() {
       gradient.addColorStop("1.0", "green");
       this.canvas.fillStyle = gradient;
       this.canvas.fillText('Game OVER!', this.gameWindow.width * 0.10, this.gameWindow.height * 0.25 );
-      this.canvas.fillText(`Your Score: ${this.highscore}`, this.gameWindow.width * 0.10, this.gameWindow.height * 0.5 );
+      this.canvas.fillText(`Your Score: ${this.score}`, this.gameWindow.width * 0.10, this.gameWindow.height * 0.5 );
     }
   }
 
@@ -454,13 +454,13 @@ function gameScreen() {
           ufo.set('symbolType', 'char'); 
           ufo.set('itemTaken', true);
           // Gives to many points because invisible ufos is also touched 
-          display.addNumberToHighscore(5);
+          display.addNumberToscore(5);
           ufo.set('symbol', '');
           airplane.addAmmo(5);
         }
   
         if (distance(airplane, ufo) && airplane.alive && ufo.alive ) {
-          display.addNumberToHighscore(-10);
+          display.addNumberToscore(-10);
           display.health = display.health - 1;
         }
   
@@ -472,14 +472,14 @@ function gameScreen() {
             shot_sound.play();
             shot.set('symbol', document.getElementById('white'));
             shot.alive = false;
-            display.addNumberToHighscore(10);
+            display.addNumberToscore(10);
             ufo.set('symbol', document.getElementById('ammo'));
             ufo.alive = false;
           }
           if (distance(shot, airplane) && shot.alive && !shot.isAmmoOfhero && !airplane.shield ) {
             shot.set('symbol', document.getElementById('white'));
             shot.alive = false;
-            display.addNumberToHighscore(-5);
+            display.addNumberToscore(-5);
             display.health = display.health - 5;
           }
         });
