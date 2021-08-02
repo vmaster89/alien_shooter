@@ -4,20 +4,37 @@
   Move down: Down
   Shoot: Space (can only shoot again if ammo is off screen)
 */
-window.onload = function () {
-  const distance = (o1, o2) => {
-    /* const x_square = Math.pow( o2.get('x_pos') - o1.get('x_pos'), 2 );
-    const y_square = Math.pow( o2.get('y_pos') - o1.get('y_pos'), 2 );
-    return Math.sqrt( x_square + y_square );*/
-    if (o1.x_pos < o2.x_pos + o2.width &&
-      o1.x_pos + o1.width > o2.x_pos &&
-      o1.y_pos  < o2.y_pos  + o2.height &&
-      o1.y_pos  + o1.height > o2.y_pos ) {
-        return true;
-    }
-    return false;
-  }
 
+const distance = (o1, o2) => {
+  /* const x_square = Math.pow( o2.get('x_pos') - o1.get('x_pos'), 2 );
+  const y_square = Math.pow( o2.get('y_pos') - o1.get('y_pos'), 2 );
+  return Math.sqrt( x_square + y_square );*/
+  if (o1.x_pos < o2.x_pos + o2.width &&
+    o1.x_pos + o1.width > o2.x_pos &&
+    o1.y_pos  < o2.y_pos  + o2.height &&
+    o1.y_pos  + o1.height > o2.y_pos ) {
+      return true;
+  }
+  return false;
+}
+function titleScreen() {
+    /* let title = document.getElementById('background_music');
+    title.play(); */
+    let gameWindow = document.getElementById('gameWindow');
+    let display = gameWindow.getContext('2d');
+    display.clearRect(0, 0, gameWindow.width, gameWindow.height);
+    display.drawImage(document.getElementById('hello'), 0, 0, gameWindow.width, gameWindow.height);
+    display.drawImage(document.getElementById('cover'), gameWindow.width * 0.5 , gameWindow.height * 0.2, gameWindow.width * 0.4, gameWindow.height * 0.5);
+    display.fillStyle = 'black';
+    display.font = '14px Consolas';
+    display.fillText('Aliens are attacking earth. Don\'t let them through!', gameWindow.width * 0.05, gameWindow.height * 0.1);
+    display.font = '12px Consolas';
+    display.fillText('[ENTER] START', gameWindow.width * 0.75, gameWindow.height * 0.86);
+    display.fillText('[F5] Restart [F11] FULL Screen', gameWindow.width * 0.75, gameWindow.height * 0.89);
+}
+
+
+function gameScreen() {
   class Figure {
     constructor(
       x_pos,
@@ -78,6 +95,8 @@ window.onload = function () {
     }
     shoot(display) {
       if ( this.ammo <= 0 ) return;
+      let shot_sound = document.getElementById('shot_sound');
+      shot_sound.play();
       this.ammo -= 1;
       const shot = new Ammo(
         this.x_pos,
@@ -204,6 +223,8 @@ window.onload = function () {
       let shotDecision = ( Math.random() * 100 )  > ( 99.8 ) ? true: false;
       //if ( heroPos.y_pos >= this.y_pos - ( this.y_pos + ( this.height / 2 ) ) &&  heroPos.y_pos > this.y_pos + ( this.height * 2) ) {
         if ( shotDecision && this.alive ) {
+          let shot_sound = document.getElementById('shot_enemy');
+          shot_sound.play();
           display.addObject(new Ammo(
             this.x_pos,
             this.y_pos+22, // this should be done relatively in the future 
@@ -227,7 +248,7 @@ window.onload = function () {
       this.stop = false;
       document.getElementById('gameWindow').height = height;
       document.getElementById('gameWindow').width = width;
-      this.gameWindow = document.getElementById('gameWindow');
+      this.gameWindow = gameWindow;
       this.background = [];
       for (let i = 0; i < 2; i += 1) {
         this.background.push({
@@ -292,6 +313,11 @@ window.onload = function () {
       this.canvas.rect(width - 110, 10, percent, 10);
       this.canvas.stroke();
     }
+    addNumberToHighscore(x) {
+      // Highscore should never be below zero 
+      this.highscore = this.highscore + x;
+      this.highscore = this.highscore <= 0 ? 0 : this.highscore;
+    }
     refresh() {
       if ( this.stop ) return;
       this.canvas.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
@@ -303,8 +329,10 @@ window.onload = function () {
         if (y >= this.gameWindow.height - 20) y -= 20;
         if (y <= 10) y += 20;
         object.set('y_pos', y);
+        this.gameWindow.font = '25px  Consolas';
         this.canvas.fillText(` Score: ${this.highscore}`, 400, 20);
         if (object.symbolType === 'img' ) this.canvas.drawImage(object.get('symbol'), x, y, object.height, object.width);
+        this.gameWindow.font = '25px  Consolas';
         if ( typeof object.ammo !== 'undefined' ) this.canvas.fillText('Ammo: ' + object.get('ammo') + ' / 10', 10, 20);
         this.drawBar(display.gameWindow.width - 140, this.health, 'green');
         if (object.shieldPower) this.drawBar(display.gameWindow.width - 10, object.shieldPower, 'blue');
@@ -321,11 +349,12 @@ window.onload = function () {
       gradient.addColorStop("1.0", "green");
       this.canvas.fillStyle = gradient;
       this.canvas.fillText('Game OVER!', this.gameWindow.width * 0.10, this.gameWindow.height * 0.25 );
-      this.canvas.fillText(`Highscore: ${this.highscore}`, this.gameWindow.width * 0.10, this.gameWindow.height * 0.5 );
+      this.canvas.fillText(`Your Score: ${this.highscore}`, this.gameWindow.width * 0.10, this.gameWindow.height * 0.5 );
     }
   }
 
   const display = new Display(400, 1000);
+  titleScreen(display);
 
   const airplane = new Hero(
     display.gameWindow.width*0.025,
@@ -365,8 +394,10 @@ window.onload = function () {
     }
   });
 
+  let start = false;
   document.addEventListener("keypress", function (event) {
     if (event.key === ' ' ) airplane.shoot(display);
+    if (event.key === 'Enter' ) start = true;
   });
 
   document.addEventListener("keyup", function (event) {
@@ -375,124 +406,138 @@ window.onload = function () {
 
   let counter = 4;
   this.gameOver = false;
-  const game = setInterval( function () {
-    if (airplane.x_pos > airplane.start_x_pos && !activeKeys['ArrowRight'] ) {
-      airplane.break();
-    }
-    if ( activeKeys['ArrowUp'] ) airplane.move(-1);
-    if ( activeKeys['ArrowDown'] ) airplane.move(1);
-    if ( activeKeys['ArrowRight'] ) airplane.accelerate();
-    if ( activeKeys['ArrowLeft'] ) airplane.break(true);
-    if ( activeKeys['Control'] ) {
-      airplane.activateShield(true);
-    } else { 
-      airplane.shield = false;
-      if ( airplane.accelerate === 0 )airplane.symbol = document.getElementById('vehicle');
-      if ( airplane.shieldPower < 100 ) airplane.shieldPower = airplane.shieldPower + 1;
-    } 
-    let shots = [];
-    let ufos = [];
-    for (let i = 0; i <= display.objectRepository.length; i+=1 ) {
-      let object = display.objectRepository[i];
-      if ( object instanceof Enemy) {
-        ufos.push(object);
+    const game = setInterval( function () {
+      if ( start ) { 
+      if (airplane.x_pos > airplane.start_x_pos && !activeKeys['ArrowRight'] ) {
+        airplane.break();
       }
-      if ( object instanceof Ammo) {
-        shots.push(object);
-      }
-    };
-
-    if (shots.length >= 1) {
-      shots.forEach( (shot, i) => {
-        if ( shot.isAmmoOfhero ) {
-          shot.x_pos = shot.x_pos + airplane.width * 0.2;
+      if ( activeKeys['ArrowUp'] ) airplane.move(-1);
+      if ( activeKeys['ArrowDown'] ) airplane.move(1);
+      if ( activeKeys['ArrowRight'] ) airplane.accelerate();
+      if ( activeKeys['ArrowLeft'] ) airplane.break(true);
+      if ( activeKeys['Control'] ) {
+        airplane.activateShield(true);
+      } else { 
+        airplane.shield = false;
+        if ( airplane.accelerate === 0 )airplane.symbol = document.getElementById('vehicle');
+        if ( airplane.shieldPower < 100 ) airplane.shieldPower = airplane.shieldPower + 1;
+      } 
+      let shots = [];
+      let ufos = [];
+      for (let i = 0; i <= display.objectRepository.length; i+=1 ) {
+        let object = display.objectRepository[i];
+        if ( object instanceof Enemy) {
+          ufos.push(object);
         }
-        if ( !shot.isAmmoOfhero ) {
-          shot.x_pos = shot.x_pos - airplane.width * 0.1;
+        if ( object instanceof Ammo) {
+          shots.push(object);
+        }
+      };
+  
+      if (shots.length >= 1) {
+        shots.forEach( (shot, i) => {
+          if ( shot.isAmmoOfhero ) {
+            shot.x_pos = shot.x_pos + airplane.width * 0.2;
+          }
+          if ( !shot.isAmmoOfhero ) {
+            shot.x_pos = shot.x_pos - airplane.width * 0.1;
+          }
+        });
+      }
+  
+      ufos.forEach ( (ufo) => {
+        ufo.shoot( airplane, 50, display );
+        ufo.move();
+        if (distance(airplane, ufo) && airplane.alive && !ufo.alive && !ufo.itemTaken ) {
+          let shot_sound = document.getElementById('coin');
+            shot_sound.play();
+          ufo.set('symbolType', 'char'); 
+          ufo.set('itemTaken', true);
+          // Gives to many points because invisible ufos is also touched 
+          display.addNumberToHighscore(5);
+          ufo.set('symbol', '');
+          airplane.addAmmo(5);
+        }
+  
+        if (distance(airplane, ufo) && airplane.alive && ufo.alive ) {
+          display.addNumberToHighscore(-10);
+          display.health = display.health - 1;
+        }
+  
+        shots.forEach( (shot, i) => {
+          // only shots should hit that haven't actually hit
+          // inactive shots do not have a symbol
+          if (distance(shot, ufo) && shot.alive && shot.isAmmoOfhero && ufo.alive ) {
+            let shot_sound = document.getElementById('explosion');
+            shot_sound.play();
+            shot.set('symbol', document.getElementById('white'));
+            shot.alive = false;
+            display.addNumberToHighscore(10);
+            ufo.set('symbol', document.getElementById('ammo'));
+            ufo.alive = false;
+          }
+          if (distance(shot, airplane) && shot.alive && !shot.isAmmoOfhero && !airplane.shield ) {
+            shot.set('symbol', document.getElementById('white'));
+            shot.alive = false;
+            display.addNumberToHighscore(-5);
+            display.health = display.health - 5;
+          }
+        });
+      });
+  
+      // CleanUp 
+      display.objectRepository = display.objectRepository.filter( ( object ) => {
+        if ( object instanceof Enemy && object.x_pos > 0 ) {
+          return object;
+        }
+        if ( object.alive === true ) {
+          return object;
+        }
+        if ( object instanceof Ammo && ( object.x_pos > 0 && object.x_pos < display.gameWindow.width ) ) {
+          return object;
+        }
+        if ( object instanceof Hero ){
+          return object;
         }
       });
-    }
-
-    ufos.forEach ( (ufo) => {
-      ufo.shoot( airplane, 50, display );
-      ufo.move();
-      if (distance(airplane, ufo) && airplane.alive && !ufo.alive && !ufo.itemTaken ) {
-        ufo.set('symbolType', 'char'); 
-        ufo.set('itemTaken', true);
-        // Gives to many points because invisible ufos is also touched 
-        display.highscore = display.highscore + 5;
-        ufo.set('symbol', '');
-        airplane.addAmmo(5);
-      }
-
-      if (distance(airplane, ufo) && airplane.alive && ufo.alive ) {
-        display.highscore = display.highscore - 10;
-        display.health = display.health - 1;
-      }
-
-      shots.forEach( (shot, i) => {
-        // only shots should hit that haven't actually hit
-        // inactive shots do not have a symbol
-        if (distance(shot, ufo) && shot.alive && shot.isAmmoOfhero && ufo.alive ) {
-          shot.set('symbol', document.getElementById('white'));
-          shot.alive = false;
-          display.highscore = display.highscore + 10;
-          ufo.set('symbol', document.getElementById('ammo'));
-          ufo.alive = false;
+      const ufoCounter = display.objectRepository.filter( ( object ) => {
+        if ( object instanceof Enemy && object.x_pos > 0 ) {
+          return object;
         }
-        if (distance(shot, airplane) && shot.alive && !shot.isAmmoOfhero && !airplane.shield ) {
-          shot.set('symbol', document.getElementById('white'));
-          shot.alive = false;
-          display.highscore = display.highscore - 5;
-          display.health = display.health - 5;
-        }
-      });
-    });
-
-    // CleanUp 
-    display.objectRepository = display.objectRepository.filter( ( object ) => {
-      if ( object instanceof Enemy && object.x_pos > 0 ) {
-        return object;
+      }).length;
+  
+      if (ufoCounter === 0) {
+        EnemyBuilder(counter, 50);
+        counter = Math.round( counter * 1.2);
       }
-      if ( object.alive === true ) {
-        return object;
+  
+      if ( display.health <= 0 ) {
+        display.gameOver();
+        clearInterval(game);
       }
-      if ( object instanceof Ammo && ( object.x_pos > 0 && object.x_pos < display.gameWindow.width ) ) {
-        return object;
-      }
-      if ( object instanceof Hero ){
-        return object;
-      }
-    });
-    const ufoCounter = display.objectRepository.filter( ( object ) => {
-      if ( object instanceof Enemy && object.x_pos > 0 ) {
-        return object;
-      }
-    }).length;
-
-    if (ufoCounter === 0) {
-      EnemyBuilder(counter, 50);
-      counter = Math.round( counter * 1.2);
+  
+      if ( ufoCounter > 0 ) {
+        ufos.forEach(( ufo ) => {
+          if ( ufo.x_pos < 0 ) {
+            display.gameOver();
+            ufos = [];
+            clearInterval(game);
+            return;
+          }
+        });
+      } 
+      display.refresh();
+      // console.log(display.objectRepository.length);
     }
+  }, 10); 
+}; 
 
-    if ( display.health <= 0 ) {
-      display.gameOver();
-      clearInterval(game);
-    }
-
-    if ( ufoCounter > 0 ) {
-      ufos.forEach(( ufo ) => {
-        if ( ufo.x_pos < 0 ) {
-          display.gameOver();
-          ufos = [];
-          clearInterval(game);
-          return;
-        }
-      });
-    } 
-    display.refresh();
-    // console.log(display.objectRepository.length);
-  }, 10);
+window.onload = function () { 
+  /* var song = document.getElementById('background'); 
+  song.loop = true;
+  song.play(); */
+  titleScreen();
+  gameScreen();
 }
 
 
