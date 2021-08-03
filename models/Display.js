@@ -29,6 +29,10 @@ export default class Display {
     this.score = this.score + x; 
     if (this.score < 0) this.score = 0; 
   }
+  addHealthToHealthBar(x) {
+    this.health = this.health + x; 
+    if (this.health >= 100) this.health = 100; 
+  }
   setResolution(option) {
     switch (option) {
       case 1: 
@@ -93,10 +97,10 @@ export default class Display {
         y = object.get('y_pos');
       if (y >= this.gameWindow.height - 20) y -= 20;
       if (y <= 10) y += 20;
-      if ( x < 0 ) {
+      /*if ( x < 0 ) {
         console.log(x); 
         console.log(object); 
-      }
+      }*/
       object.set('y_pos', y);
       this.gameWindow.font = '25px  Consolas';
       this.canvas.fillStyle = 'white';

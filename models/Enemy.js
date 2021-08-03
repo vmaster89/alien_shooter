@@ -27,34 +27,60 @@ export default class Enemy extends Figure {
       }*/
       this.direction = 1;
       this.alive = alive;
+      this.symbol = symbol;
+      this.inventory = [
+        {
+          type: 'health',
+          symbol: document.getElementById('health'),
+        },
+        {
+          type: 'ammo',
+          symbol: document.getElementById('ammo'),
+        }
+      ]
       this.itemTaken = false;
+      this.itemType = null;
+      this.height = height; 
+      this.width = width;
     }
     getItem() {
       let shot_sound = document.getElementById('coin');
       shot_sound.play();
       this.set('itemTaken', true);
+      return this.itemType;
     }
     dropItem() {
       let shot_sound = document.getElementById('explosion');
       shot_sound.play();
       // this.set('symbol', document.getElementById('white'));
       this.alive = false;
-      if ( Math.round( Math.random() ) > 1/5 ) {
+      this.set('itemTaken', false);
+      if ( !this.itemType && Math.round( Math.random() ) > 0.25 ) {
         console.log('ammo dropped');
-        this.set('symbol', document.getElementById('ammo'));
+        this.set('symbol', this.inventory[1].symbol);
+        this.itemType = 'ammo';
+        this.height = this.height / 4;
+        this.width = this.width / 4; 
+      } else if ( !this.itemType && Math.round( Math.random() ) > 0.05 ) {
+        console.log('health dropped');
+        this.itemType = 'health';
+        this.set('symbol', this.inventory[0].symbol);
+        this.height = this.height / 4;
+        this.width = this.width / 4; 
       } else {
         this.set('itemTaken', true); 
       }
     }
     move(display) {
+      console.log(this.y_pos >= display.gameWindow.height - ( 2 * Math.round( this.height ) ));
       if ( this.y_pos < display.gameWindow.height ) {
         this.y_pos = this.y_pos + 1 * this.direction;
       }
-      if ( this.y_pos > display.gameWindow.height - ( this.height ) ) {
+      if ( this.y_pos >= display.gameWindow.height - ( 2 * Math.round( this.height ) + 1 ) ) {
         this.direction = -1;
         this.y_pos = this.y_pos + 1 * this.direction;
       }
-      if ( this.y_pos < 50 ) {
+      if ( this.y_pos < this.height ) {
         this.direction = 1;
         this.y_pos = this.y_pos + 1 * this.direction;
       }

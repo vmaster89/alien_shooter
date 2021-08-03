@@ -133,9 +133,10 @@ function gameScreen(displayObject) {
         ufo.shoot( airplane, 50, display );
         ufo.move(display);
         if (distance(airplane, ufo) && airplane.alive && !ufo.alive && !ufo.itemTaken ) {
-          ufo.getItem();
+          const itemType = ufo.getItem();
+          if ( itemType === 'ammo' ) airplane.addAmmo(5);
+          if ( itemType === 'health' ) display.addHealthToHealthBar(5);
           display.addNumberToScore(5);
-          airplane.addAmmo(5);
         }
   
         if (distance(airplane, ufo) && airplane.alive && ufo.alive ) {
@@ -155,7 +156,7 @@ function gameScreen(displayObject) {
             shot.set('symbol', document.getElementById('white'));
             shot.alive = false;
             display.addNumberToScore(-5);
-            display.health = display.health - 10;
+            display.health = display.health - 20;
           }
         });
       });
@@ -164,12 +165,12 @@ function gameScreen(displayObject) {
       display.objectRepository = display.objectRepository.filter( ( object ) => {
         // Enemy Cleanup 
         // Take only enemies that are visible
-        if ( object instanceof Enemy && object.x_pos > ( -1 * ( object.width * 5 ) ) ) {
+        if ( object instanceof Enemy && object.x_pos > 0 ) {
           // Take only enemy items (items dropped by enemies)
           if ( !object.alive && !object.itemTaken ) {
             return object;
           // Or take aliens that are still alive 
-          } else if ( object.alive ) {
+          } else if ( object.alive && !object.itemTaken ) {
             return object;
           }
         }
@@ -207,7 +208,7 @@ function gameScreen(displayObject) {
   
       if ( ufoCounter > 0 ) {
         ufos.forEach(( ufo ) => {
-          if ( ufo.x_pos < 0 ) {
+          if ( ufo.x_pos < 0 - ufo.width && ufo.alive ) {
             display.gameOver();
             ufos = [];
             clearInterval(game);
