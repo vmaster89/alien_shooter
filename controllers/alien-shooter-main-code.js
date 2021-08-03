@@ -133,13 +133,8 @@ function gameScreen(displayObject) {
         ufo.shoot( airplane, 50, display );
         ufo.move(display);
         if (distance(airplane, ufo) && airplane.alive && !ufo.alive && !ufo.itemTaken ) {
-          let shot_sound = document.getElementById('coin');
-            shot_sound.play();
-          //ufo.set('symbolType', 'char'); 
-          ufo.set('itemTaken', true);
-          // Gives to many points because invisible ufos is also touched 
+          ufo.getItem();
           display.addNumberToScore(5);
-          // ufo.set('symbol', '');
           airplane.addAmmo(5);
         }
   
@@ -152,13 +147,9 @@ function gameScreen(displayObject) {
           // only shots should hit that haven't actually hit
           // inactive shots do not have a symbol
           if (distance(shot, ufo) && shot.alive && shot.isAmmoOfhero && ufo.alive ) {
-            let shot_sound = document.getElementById('explosion');
-            shot_sound.play();
-            shot.set('symbol', document.getElementById('white'));
             shot.alive = false;
+            ufo.dropItem();
             display.addNumberToScore(10);
-            ufo.set('symbol', document.getElementById('ammo'));
-            ufo.alive = false;
           }
           if (distance(shot, airplane) && shot.alive && !shot.isAmmoOfhero && !airplane.shield ) {
             shot.set('symbol', document.getElementById('white'));
@@ -171,7 +162,21 @@ function gameScreen(displayObject) {
   
       // CleanUp 
       display.objectRepository = display.objectRepository.filter( ( object ) => {
-        if ( object instanceof Enemy && object.x_pos > 0 ) {
+        // Enemy Cleanup 
+        // Take only enemies that are visible
+        if ( object instanceof Enemy && object.x_pos > ( -1 * ( object.width * 5 ) ) ) {
+          // Take only enemy items (items dropped by enemies)
+          if ( !object.alive && !object.itemTaken ) {
+            return object;
+          // Or take aliens that are still alive 
+          } else if ( object.alive ) {
+            return object;
+          }
+        }
+        if ( object.alive && !object.itemTaken && object instanceof Enemy && object.x_pos > ( -1 * ( object.width * 5 ) ) ) {
+          return object;
+        }
+        if ( object instanceof Enemy && !object.alive && !object.itemTaken ) {
           return object;
         }
         if ( object.alive === true && ( object.x_pos <= display.gameWindow.width && !object instanceof Ammo ) ) {

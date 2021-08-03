@@ -29,6 +29,23 @@ export default class Enemy extends Figure {
       this.alive = alive;
       this.itemTaken = false;
     }
+    getItem() {
+      let shot_sound = document.getElementById('coin');
+      shot_sound.play();
+      this.set('itemTaken', true);
+    }
+    dropItem() {
+      let shot_sound = document.getElementById('explosion');
+      shot_sound.play();
+      // this.set('symbol', document.getElementById('white'));
+      this.alive = false;
+      if ( Math.round( Math.random() ) > 1/5 ) {
+        console.log('ammo dropped');
+        this.set('symbol', document.getElementById('ammo'));
+      } else {
+        this.set('itemTaken', true); 
+      }
+    }
     move(display) {
       if ( this.y_pos < display.gameWindow.height ) {
         this.y_pos = this.y_pos + 1 * this.direction;
