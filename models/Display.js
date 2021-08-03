@@ -90,12 +90,13 @@ export default class Display {
         y = object.get('y_pos');
       if (y >= this.gameWindow.height - 20) y -= 20;
       if (y <= 10) y += 20;
-      if ( x >= this.gameWindow.width ) {
+      if ( x < 0 ) {
         console.log(x); 
         console.log(object); 
       }
       object.set('y_pos', y);
       this.gameWindow.font = '25px  Consolas';
+      this.score = this.score ? this.score : 0; 
       this.canvas.fillText(` Score: ${this.score}`, 400, 20);
       if (object.symbolType === 'img' ) this.canvas.drawImage(object.get('symbol'), x, y, object.height, object.width);
       this.gameWindow.font = '25px  Consolas';

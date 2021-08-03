@@ -58,7 +58,7 @@ export default class Hero extends Figure {
     accelerate() {
       this.acceleration = this.acceleration + 0.4;
       if ( this.x_pos < ( this.start_x_pos * 20 ) ) {
-        this.speed = 0.1 * this.acceleration;
+        this.speed = 0.05 * this.acceleration;
         this.x_pos = this.x_pos + this.speed;
       }
       this.symbol = document.getElementById('vehicle_faster');
@@ -80,7 +80,7 @@ export default class Hero extends Figure {
       if ( activation && this.acceleration === 0 && this.shieldPower >= 1 ) {
         this.shield = true;
         this.symbol = document.getElementById('vehicle_shield');
-        this.shieldPower = this.shieldPower - 0.05;
+        this.shieldPower = this.shieldPower - 0.25;
       } else {
         this.shield = false; 
         this.symbol = document.getElementById('vehicle');
