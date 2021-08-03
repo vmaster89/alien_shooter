@@ -66,7 +66,7 @@ function gameScreen(displayObject) {
     }
   }
   
-  EnemyBuilder(2, 50);
+  EnemyBuilder(5, 50);
   display.addObject(airplane);
 
   let activeKeys = {};
@@ -88,7 +88,7 @@ function gameScreen(displayObject) {
     delete activeKeys[event.key];
   });
 
-  let counter = 4;
+  let counter = 10;
   let gameOver = false;
     const game = setInterval( function () {
       if ( start ) { 
@@ -135,11 +135,11 @@ function gameScreen(displayObject) {
         if (distance(airplane, ufo) && airplane.alive && !ufo.alive && !ufo.itemTaken ) {
           let shot_sound = document.getElementById('coin');
             shot_sound.play();
-          ufo.set('symbolType', 'char'); 
+          //ufo.set('symbolType', 'char'); 
           ufo.set('itemTaken', true);
           // Gives to many points because invisible ufos is also touched 
           display.addNumberToScore(5);
-          ufo.set('symbol', '');
+          // ufo.set('symbol', '');
           airplane.addAmmo(5);
         }
   
@@ -164,7 +164,7 @@ function gameScreen(displayObject) {
             shot.set('symbol', document.getElementById('white'));
             shot.alive = false;
             display.addNumberToScore(-5);
-            display.health = display.health - 5;
+            display.health = display.health - 10;
           }
         });
       });

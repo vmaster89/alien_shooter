@@ -1,3 +1,6 @@
+import Ammo from './Ammo.js';
+import Enemy from './Enemy.js';
+
 export default class Display {
   constructor(document, height, width) {
     if (typeof this.instance === 'object') {
@@ -52,7 +55,7 @@ export default class Display {
   drawBackground () {
     // Use Gameloop
     this.background[0].x_pos = this.background[0].x_pos - 0.5;
-    this.canvas.drawImage(this.background[0].image, this.background[0].x_pos, 0, this.gameWindow.width, this.gameWindow.height);
+    this.canvas.drawImage(this.background[0].image, this.background[0].x_pos, 4, this.gameWindow.width, this.gameWindow.height);
     this.background[1].x_pos = this.background[1].x_pos - 0.5;
     this.canvas.drawImage(this.background[1].image, this.background[1].x_pos, 0, this.gameWindow.width, this.gameWindow.height);
     if ( this.background[0].x_pos <= 0-this.gameWindow.width ) {
@@ -67,12 +70,12 @@ export default class Display {
     this.canvas.beginPath();
     this.canvas.lineWidth = "10";
     this.canvas.strokeStyle = "red";
-    this.canvas.rect(width - 110, 10, 100, 10);
+    this.canvas.rect(width - 110, 10, 100, 2);
     this.canvas.stroke();
     this.canvas.beginPath();
     this.canvas.lineWidth = "10";
     this.canvas.strokeStyle = color;
-    this.canvas.rect(width - 110, 10, percent, 10);
+    this.canvas.rect(width - 110, 10, percent, 2);
     this.canvas.stroke();
   }
   addNumberToScore(x) {
@@ -96,9 +99,16 @@ export default class Display {
       }
       object.set('y_pos', y);
       this.gameWindow.font = '25px  Consolas';
-      this.score = this.score ? this.score : 0; 
-      this.canvas.fillText(` Score: ${this.score}`, 400, 20);
-      if (object.symbolType === 'img' ) this.canvas.drawImage(object.get('symbol'), x, y, object.height, object.width);
+      this.canvas.fillStyle = 'white';
+      // this.score = this.score ? this.score : 0; 
+      /* if ( this.score ) */ this.canvas.fillText(` Score: ${this.score ? this.score : 0}`, 400, 20);
+      if ( object instanceof Ammo ) {
+        if ( object.alive ) this.canvas.drawImage(object.get('symbol'), x, y, object.height, object.width);
+      } else if ( object instanceof Enemy ) {
+        if ( !object.itemTaken ) this.canvas.drawImage(object.get('symbol'), x, y, object.height, object.width);
+      } else {
+        this.canvas.drawImage(object.get('symbol'), x, y, object.height, object.width);
+      }
       this.gameWindow.font = '25px  Consolas';
       if ( typeof object.ammo !== 'undefined' ) this.canvas.fillText('Ammo: ' + object.get('ammo') + ' / 10', 10, 20);
       this.drawBar(this.gameWindow.width - 140, this.health, 'green');
