@@ -5,7 +5,7 @@ Website: vmaster.de <br />
 Online Demo: mroesner.com/game/ (might not be the same as hosted here) <br />
 
 # Version 
-0.1.0 
+1.2.0 
 
 # Setup 
 ## Download 
@@ -24,10 +24,12 @@ Clone the repository and execute the index.html file
 Tool: https://www.pixilart.com/draw
 
 # Major Changes 
+
 ## v. 1.2.0
 [ADDED] Player Feedback: Healthbar<br />
 [FIXED] Player score below zero<br />
 [CHANGED] Highscore to just score<br />
+[FIXED] Shield bug and improved usability<br /> 
 
 ## v. 1.1.0 stable
 [ADDED] Ammo Indication<br />

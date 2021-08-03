@@ -174,7 +174,7 @@ function gameScreen(displayObject) {
         if ( object instanceof Enemy && object.x_pos > 0 ) {
           return object;
         }
-        if ( object.alive === true ) {
+        if ( object.alive === true && ( object.x_pos <= display.gameWindow.width && !object instanceof Ammo ) ) {
           return object;
         }
         if ( object instanceof Ammo && ( object.x_pos > 0 && object.x_pos < display.gameWindow.width ) ) {

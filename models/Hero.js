@@ -80,7 +80,7 @@ export default class Hero extends Figure {
       if ( activation && this.acceleration === 0 && this.shieldPower >= 1 ) {
         this.shield = true;
         this.symbol = document.getElementById('vehicle_shield');
-        this.shieldPower = this.shieldPower - 1;
+        this.shieldPower = this.shieldPower - 0.05;
       } else {
         this.shield = false; 
         this.symbol = document.getElementById('vehicle');
