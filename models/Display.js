@@ -95,8 +95,8 @@ export default class Display {
     this.objectRepository.forEach((object) => {
       let x = object.get('x_pos'),
         y = object.get('y_pos');
-      if (y >= this.gameWindow.height - 20) y -= 20;
-      if (y <= 10) y += 20;
+      if (y >= this.gameWindow.height - 1) y -= 50;
+      if (y <= 1) y += 50;
       /*if ( x < 0 ) {
         console.log(x); 
         console.log(object); 

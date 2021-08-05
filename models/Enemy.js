@@ -1,6 +1,35 @@
 import Figure from './Figure.js';
 import Ammo from './Ammo.js';
 
+let i = 0;
+let x,y = 0;
+const Movement = {
+  1: function (display) {
+    // console.log(this.y_pos >= display.gameWindow.height - ( 2 * Math.round( this.height ) ));
+    if ( this.y_pos < display.gameWindow.height ) {
+      this.y_pos = this.y_pos + 1 * this.direction;
+    }
+    if ( this.y_pos >= display.gameWindow.height - ( 2 * Math.round( this.height ) + 1 ) ) {
+      this.direction = -1;
+      this.y_pos = this.y_pos + 1 * this.direction;
+    }
+    if ( this.y_pos < this.height ) {
+      this.direction = 1;
+      this.y_pos = this.y_pos + 1 * this.direction;
+    }
+    this.x_pos = this.x_pos - 1;
+  },
+  2: function (display) {
+        // j = speed (also influences the curves)
+        this.j = 1;
+          this.x_pos = this.x_pos - this.j;
+          // X can increase curve sizes : Math.sin( X * this.x_pos )
+          // https://jsfiddle.net/6hv70wen/
+          this.y_pos = this.y_pos + Math.sin( 1/50 * this.x_pos );
+          console.log(this.x_pos);
+  }
+}
+
 export default class Enemy extends Figure {
     constructor(
       x_pos,
@@ -9,7 +38,9 @@ export default class Enemy extends Figure {
       width,
       symbol,
       symbolType,
-      alive
+      alive,
+      enemyWeapon,
+      enemyType,
     ) {
       super(
         x_pos,
@@ -20,8 +51,12 @@ export default class Enemy extends Figure {
         symbolType,
         alive
       );
-      this.y_pos = Math.round(Math.random()*y_pos);
+      let min = this.height * 4;
+      let max = this.height * 15;
+      this.y_pos = Math.floor( Math.random() * (  max - min + 1 ) ) + min;
       this.x_pos = x_pos;
+      this.enemyWeapon = enemyWeapon;
+      this.alive = alive;
       /*if ( this.x_pos <= display.gameWindow.width * 0.5) {
         this.x_pos = display.gameWindow.width * 0.8;
       }*/
@@ -42,6 +77,11 @@ export default class Enemy extends Figure {
       this.itemType = null;
       this.height = height; 
       this.width = width;
+      this.move = Movement[enemyType];
+      this.start_x_pos = this.x_pos;
+      this.start_y_pos = this.y_pos;
+      this.i = 0;
+      this.j = 0;
     }
     getItem() {
       let shot_sound = document.getElementById('coin');
@@ -49,43 +89,31 @@ export default class Enemy extends Figure {
       this.set('itemTaken', true);
       return this.itemType;
     }
-    dropItem() {
+    dropItem(display) {
       let shot_sound = document.getElementById('explosion');
       shot_sound.play();
       // this.set('symbol', document.getElementById('white'));
       this.alive = false;
       this.set('itemTaken', false);
       if ( !this.itemType && Math.round( Math.random() ) > 0.25 ) {
-        console.log('ammo dropped');
+        // console.log('enemyWeapon dropped');
         this.set('symbol', this.inventory[1].symbol);
         this.itemType = 'ammo';
-        this.height = this.height / 4;
-        this.width = this.width / 4; 
+        this.height = display.gameWindow.height * 0.05;
+        this.width = display.gameWindow.height * 0.05; 
       } else if ( !this.itemType && Math.round( Math.random() ) > 0.05 ) {
-        console.log('health dropped');
+        // console.log('health dropped');
         this.itemType = 'health';
         this.set('symbol', this.inventory[0].symbol);
-        this.height = this.height / 4;
-        this.width = this.width / 4; 
+        this.height = display.gameWindow.height * 0.05;
+        this.width = display.gameWindow.height * 0.05; 
       } else {
         this.set('itemTaken', true); 
       }
     }
-    move(display) {
-      console.log(this.y_pos >= display.gameWindow.height - ( 2 * Math.round( this.height ) ));
-      if ( this.y_pos < display.gameWindow.height ) {
-        this.y_pos = this.y_pos + 1 * this.direction;
-      }
-      if ( this.y_pos >= display.gameWindow.height - ( 2 * Math.round( this.height ) + 1 ) ) {
-        this.direction = -1;
-        this.y_pos = this.y_pos + 1 * this.direction;
-      }
-      if ( this.y_pos < this.height ) {
-        this.direction = 1;
-        this.y_pos = this.y_pos + 1 * this.direction;
-      }
-      this.x_pos = this.x_pos - 1;
-    }
+    /* move(display) {
+      
+    } */
     shoot( heroPos, pCorrection, display ) {
       // pCorrection influences the probability 
       let shotDecision = ( Math.random() * 100 )  > ( 99.8 ) ? true: false;
@@ -96,13 +124,23 @@ export default class Enemy extends Figure {
           display.addObject(new Ammo(
             this.x_pos,
             this.y_pos+22, // this should be done relatively in the future 
-            15,
-            2,
-            document.getElementById('shot_enemy1'),
+            this.enemyWeapon.width,
+            this.enemyWeapon.height,
+            this.enemyWeapon.shotSymbol,
             'img',
-            true, // alive 
-            false // heroAmmo
+            this.alive, // alive 
+            false // heroenemyWeapon
           ));
+
+          /**
+          x_pos,
+          y_pos,
+          height,
+          width,
+          symbol,
+          symbolType,
+          alive,
+          isenemyWeaponOfhero */
         }
       //}
     }
