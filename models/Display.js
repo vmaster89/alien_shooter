@@ -60,9 +60,9 @@ export default class Display {
   }
   drawBackground () {
     // Use Gameloop
-    this.background[0].x_pos = this.background[0].x_pos - 0.5;
+    this.background[0].x_pos = this.background[0].x_pos - 1;
     this.canvas.drawImage(this.background[0].image, this.background[0].x_pos, 4, this.gameWindow.width, this.gameWindow.height);
-    this.background[1].x_pos = this.background[1].x_pos - 0.5;
+    this.background[1].x_pos = this.background[1].x_pos - 1;
     this.canvas.drawImage(this.background[1].image, this.background[1].x_pos, 0, this.gameWindow.width, this.gameWindow.height);
     if ( this.background[0].x_pos <= 0-this.gameWindow.width ) {
       this.background.shift();

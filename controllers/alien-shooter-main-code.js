@@ -153,7 +153,7 @@ function titleScreen() {
   display.drawImage(coverFigure, pixelMap.get('cover').x, pixelMap.get('cover').y, gameWindow.width / 20 * ( pixelMap.get('cover').sizeFactor), gameWindow.height / 20 * ( pixelMap.get('cover').sizeFactor ));
   display.fillStyle = 'white';
   display.font = '12px Consolas';
-  display.fillText('Aliens are attacking earth. Don\'t let them through!', gameWindow.width * 0.05, gameWindow.height * ( 0.89 + 0.05 ));
+  display.fillText('Aliens are attacking earth. Don\'t let them through!', gameWindow.width * 0.05,  gameWindow.height * 0.86);
   display.font = '12px Consolas';
   display.fillText('[ENTER] START', gameWindow.width * 0.75, gameWindow.height * 0.86);
   display.fillText('[F5] Restart [F11] FULL Screen', gameWindow.width * 0.75, gameWindow.height * 0.89);
@@ -221,9 +221,14 @@ let objects = initConfiguration(titleScreen);
 let display = objects.display;
 let EnemyBuilder = objects.EnemyBuilder;
 let airplane = objects.airplane;
-let round = 0;
+let round = 0, last_round = 0;
 let counter = 4;
+let speed = 1;
 function gameScreen(gameOver) {
+  if ( round > last_round ) {
+    speed += 0.1;
+    last_round = round;
+  }
   if (start) {
     if (airplane.x_pos > airplane.start_x_pos && !activeKeys['ArrowRight']) {
       airplane.break();
@@ -257,14 +262,14 @@ function gameScreen(gameOver) {
           shot.x_pos = shot.x_pos + airplane.width * 0.2;
         }
         if (!shot.isAmmoOfhero) {
-          shot.x_pos = shot.x_pos - airplane.width * 0.1;
+          shot.x_pos = shot.x_pos - airplane.width * 0.1 * speed;
         }
       });
     }
 
     ufos.forEach((ufo) => {
       ufo.shoot(airplane, 50, display);
-      ufo.move(display);
+      ufo.move(display, speed);
       if (distance(airplane, ufo) && airplane.alive && !ufo.alive && !ufo.itemTaken) {
         const itemType = ufo.getItem();
         if (itemType === 'ammo') airplane.addAmmo(5);

@@ -1,10 +1,8 @@
 import Figure from './Figure.js';
 import Ammo from './Ammo.js';
 
-let i = 0;
-let x,y = 0;
 const Movement = {
-  1: function (display) {
+  1: function (display, speed) {
     // console.log(this.y_pos >= display.gameWindow.height - ( 2 * Math.round( this.height ) ));
     if ( this.y_pos < display.gameWindow.height ) {
       this.y_pos = this.y_pos + 1 * this.direction;
@@ -17,16 +15,15 @@ const Movement = {
       this.direction = 1;
       this.y_pos = this.y_pos + 1 * this.direction;
     }
-    this.x_pos = this.x_pos - 1;
+    this.x_pos = this.x_pos - speed;
   },
-  2: function (display) {
-        // j = speed (also influences the curves)
-        this.j = 1;
-          this.x_pos = this.x_pos - this.j;
-          // X can increase curve sizes : Math.sin( X * this.x_pos )
-          // https://jsfiddle.net/6hv70wen/
-          this.y_pos = this.y_pos + Math.sin( 1/50 * this.x_pos );
-          console.log(this.x_pos);
+  2: function (display, speed) {
+      // j = speed (also influences the curves)
+      this.j = 1;
+      this.x_pos = this.x_pos - speed;
+      // X can increase curve sizes : Math.sin( X * this.x_pos )
+      // https://jsfiddle.net/6hv70wen/
+      this.y_pos = this.y_pos + Math.sin( 1/50 * this.x_pos );
   }
 }
 
@@ -51,8 +48,8 @@ export default class Enemy extends Figure {
         symbolType,
         alive
       );
-      let min = this.height * 4;
-      let max = this.height * 15;
+      let min = this.height * 1;
+      let max = this.height * 20;
       this.y_pos = Math.floor( Math.random() * (  max - min + 1 ) ) + min;
       this.x_pos = x_pos;
       this.enemyWeapon = enemyWeapon;
