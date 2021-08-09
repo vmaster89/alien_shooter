@@ -5,7 +5,7 @@ Website: vmaster.de <br />
 Online Demo: mroesner.com/game/ (might not be the same as hosted here) <br />
 
 # Version 
-0.1.0 
+1.2.0 
 
 # Setup 
 ## Download 
@@ -24,8 +24,20 @@ Clone the repository and execute the index.html file
 Tool: https://www.pixilart.com/draw
 
 # Major Changes 
+
+Beta Versions 
+
 ## v. 1.2.0
 [ADDED] Player Feedback: Healthbar<br />
+[FIXED] Player score below zero<br />
+[CHANGED] Highscore is now saved<br />
+[FIXED] Shield bug and improved usability<br /> 
+[ADDED] Enemy <br /> 
+[ADDED] Sinus Curve as flight animation for Enemy #2 <br />
+[CHANGED] Splash Screen and added animation<br />
+[CHANGED] Splash Screen and added music<br />
+[ADDED] Sound effects when shooting or taking an item<br />
+[CHANGED] Player sprite and sprite for Enemy #1<br />
 
 ## v. 1.1.0 stable
 [ADDED] Ammo Indication<br />

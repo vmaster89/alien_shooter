@@ -1,7 +1,7 @@
 {
   "name": "alien_shooter",
-  "version": "0.1.0",
-  "description": "Alpha Version",
+  "version": "1.4.0",
+  "description": "Beta Version",
   "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -20,6 +20,7 @@
   "dependencies": {
     "fs": "0.0.1-security",
     "fs-promise": "^2.0.3",
+    "http-server": "^0.12.3",
     "minify": "^7.0.2"
   },
   "devDependencies": {}
