@@ -27,17 +27,14 @@ Tool: https://www.pixilart.com/draw
 
 Beta Versions 
 
-## v. 1.4.0 
-[ADDED] Enemy <br /> 
-[ADDED] Sinus Curve as flight animation for Enemy #2 <br />
-[CHANGED] Splash Screen and added animation <br />
-[CHANGED] Highscore is now saved to cookies <br />
-
 ## v. 1.2.0
 [ADDED] Player Feedback: Healthbar<br />
 [FIXED] Player score below zero<br />
-[CHANGED] Highscore to just score<br />
+[CHANGED] Highscore is now saved<br />
 [FIXED] Shield bug and improved usability<br /> 
+[ADDED] Enemy <br /> 
+[ADDED] Sinus Curve as flight animation for Enemy #2 <br />
+[CHANGED] Splash Screen and added animation <br />
 
 ## v. 1.1.0 stable
 [ADDED] Ammo Indication<br />
