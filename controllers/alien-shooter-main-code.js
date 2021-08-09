@@ -12,6 +12,9 @@ pixelMap.set('cover', {
   sizeFactor: 1,
 });
 function titleScreen() {
+  let highscore = document.cookie.split(';').filter((item) => item.trim().startsWith('highscore='));
+  console.log(highscore[0]);
+  highscore = highscore[0] ? highscore[0].replace('highscore=', '').trim() : '0';
   let display = gameWindow.getContext('2d');
   /* let title = document.getElementById('background_music');
   title.play(); */
@@ -33,6 +36,7 @@ function titleScreen() {
   display.font = '12px Consolas';
   display.fillText('[ENTER] START', gameWindow.width * 0.75, gameWindow.height * 0.86);
   display.fillText('[F5] Restart [F11] FULL Screen', gameWindow.width * 0.75, gameWindow.height * 0.89);
+  display.fillText('Highscore: ' + highscore, gameWindow.width * 0.05, gameWindow.height * 0.89);
 }
 
 let activeKeys = {};
@@ -60,7 +64,8 @@ let display = objects.display;
 let EnemyBuilder = objects.EnemyBuilder;
 let airplane = objects.airplane;
 let round = 0;
-function gameScreen(counter, gameOver) {
+let counter = 4;
+function gameScreen(gameOver) {
   if (start) {
     if (airplane.x_pos > airplane.start_x_pos && !activeKeys['ArrowRight']) {
       airplane.break();
@@ -110,7 +115,7 @@ function gameScreen(counter, gameOver) {
       }
 
       if (distance(airplane, ufo) && airplane.alive && ufo.alive) {
-        display.addNumberToScore(-10);
+        // display.addNumberToScore(-10);
         display.health = display.health - 1;
       }
 
@@ -125,7 +130,7 @@ function gameScreen(counter, gameOver) {
         if (distance(shot, airplane) && shot.alive && !shot.isAmmoOfhero && !airplane.shield) {
           shot.set('symbol', document.getElementById('white'));
           shot.alive = false;
-          display.addNumberToScore(-5);
+          // display.addNumberToScore(-5);
           display.health = display.health - 20;
         }
       });
@@ -165,11 +170,11 @@ function gameScreen(counter, gameOver) {
         return object;
       }
     }).length;
-
+    
     if (ufoCounter === 0) {
-      if ( round = 0 || round >= 2 ) {
+      if ( round % 2 === 0 ) {
         EnemyBuilder(counter, 100, 0);
-      } else if ( round = 1 ) {
+      } else {
         EnemyBuilder(counter, 50, 1);
       }
       // EnemyBuilder(counter, 50);
@@ -179,7 +184,10 @@ function gameScreen(counter, gameOver) {
 
     if (display.health <= 0) {
       display.gameOver();
-      start = false;
+      round = 0;
+      counter = 2;
+      //  start = false;
+      display.health = 100;
       return true;
     }
 
@@ -188,6 +196,10 @@ function gameScreen(counter, gameOver) {
         if (ufo.x_pos < 0 - ufo.width && ufo.alive) {
           display.gameOver();
           ufos = [];
+          round = 0;
+          counter = 2;
+          // start = false; 
+          display.health = 100;
           return true;
         }
       });
@@ -204,8 +216,8 @@ window.onload = function () {
       cancelAnimationFrame(animate);
     } else {
       requestAnimationFrame(animate);
-      titleScreen();
-      end = gameScreen(10, false);
+      if ( !start ) titleScreen();
+      gameScreen(false);
     }
   };
   animate();

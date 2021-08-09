@@ -24,6 +24,8 @@ export default class Display {
     this.objectRepository = [];
     this.score = 0;
     this.health = 100;
+    this.highscore = document.cookie.split(';').filter((item) => item.trim().startsWith('highscore='))[0];
+    this.highscore = this.highscore ? this.highscore.replace('highscore=', '') : 0;
   }
   addNumberToscore(x) {
     this.score = this.score + x; 
@@ -123,13 +125,16 @@ export default class Display {
     this.stop = true;
     this.drawBackground();
     // this.canvas.clearRect(0, 0, this.gameWindow.width, this.gameWindow.height);
-    this.canvas.font = '100px Arial';
     var gradient = this.canvas.createLinearGradient(0, 0, this.gameWindow.width, 0);
     gradient.addColorStop("0", "red");
     gradient.addColorStop("0.5", "red");
     gradient.addColorStop("1.0", "green");
     this.canvas.fillStyle = gradient;
     this.canvas.fillText('Game OVER!', this.gameWindow.width * 0.10, this.gameWindow.height * 0.25 );
-    this.canvas.fillText(`Your Score: ${this.score}`, this.gameWindow.width * 0.10, this.gameWindow.height * 0.5 );
+    if ( this.score > parseInt(this.highscore) ) {
+      document.cookie = "highscore=; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax; Secure";
+      document.cookie = `highscore=${this.score}; expires=Fri, 31 Dec 9999 23:59:59 GMT; SameSite=Lax; Secure`; 
+    }
+    this.canvas.fillText(`Your Score: ${this.score} | Highscore: ${this.highscore}`, this.gameWindow.width * 0.10, this.gameWindow.height * 0.5 );
   }
 }
