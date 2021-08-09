@@ -1,7 +1,7 @@
 {
   "name": "alien_shooter",
-  "version": "1.2.0",
-  "description": "Alpha Version",
+  "version": "1.4.0",
+  "description": "Beta Version",
   "main": "index.html",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
